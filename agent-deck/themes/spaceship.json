@@ -1,0 +1,41 @@
+{
+  "name": "spaceship",
+  "label": "Spaceship deck",
+  "palette": {
+    "floor1": "#2a3242", "floor2": "#303a4d", "grout": "#1c2230",
+    "aisle1": "#12424f", "aisle2": "#155062",
+    "wall": "#3a4658", "wall2": "#44526a", "wainscot": "#2b3546",
+    "trim": "#19d3e6", "trimDim": "#0e7f8c",
+    "steel1": "#5b6a80", "steel2": "#3f4b5e", "steel3": "#2e3747",
+    "base1": "#1a212e", "base2": "#131924",
+    "glass": "#7fe7ff",
+    "pod1": "#1e3a44", "pod2": "#22414c", "podGrout": "#142a31",
+    "bg": "#04070f"
+  },
+  "props": {
+    "desk": ["#4a5870", "#34405a", "#262f45"],
+    "chair": ["#5b6a80", "#3f4b5e", "#2e3747"],
+    "table": ["#2a6d78", "#1e515a", "#163d44"]
+  },
+  "figures": {
+    "lead": { "shirt": "#3b4fd8", "hair": "#2b1d0e", "pants": "#26305c", "acc": "tie", "crown": true },
+    "Explore": { "shirt": "#2f9e6b", "hair": "#5a3a1a", "pants": "#2b3a4b", "acc": "cap" },
+    "Plan": { "shirt": "#7b5bd6", "hair": "#8a8a8a", "pants": "#3a2a5a", "acc": "glasses" },
+    "general-purpose": { "shirt": "#e07a2f", "hair": "#1a1a1a", "pants": "#3a2a1a", "acc": "hat" },
+    "code-review": { "shirt": "#d64b4b", "hair": "#3a2a1a", "pants": "#2a1a1a", "acc": "badge" },
+    "default": { "shirt": "#7f8ba6", "hair": "#3a2a1a", "pants": "#2b3a4b", "acc": null }
+  },
+  "states": {
+    "working": "#3ddc97", "thinking": "#6aa6ff", "waiting": "#ffb347", "idle": "#7f8ba6",
+    "done": "#b48cff", "joining": "#b48cff", "leaving": "#b48cff", "compacting": "#ff4d4d",
+    "teleporting": "#7fe7ff"
+  },
+  "models": {
+    "claude-fable-5-1": { "chip": "F5.1", "color": "#e0b354" },
+    "claude-opus-5": { "chip": "O5", "color": "#b48cff" },
+    "claude-sonnet-5": { "chip": "S5", "color": "#6aa6ff" },
+    "claude-haiku-4-5-20251001": { "chip": "H4.5", "color": "#3ddc97" }
+  },
+  "text": { "deck": "DECK 1", "door": "AIRLOCK", "board": "ASSIGNMENT", "pod": "HUDDLE", "pad": "TRANSPORTER" },
+  "features": { "stars": true, "viewports": true, "planet": true }
+}

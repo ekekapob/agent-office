@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Office · Isometric · agent workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1e;--panel:#111a30;--panel2:#0d1527;--line:#26324f;--text:#e8edff;--muted:#8e99bb;
+  --work:#3ddc97;--think:#6aa6ff;--wait:#ffb347;--idle:#7f8ba6;--done:#b48cff;
+  --pix:'Press Start 2P',monospace;--game:'VT323',ui-monospace,monospace;--ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);font-size:14px;display:flex;flex-direction:column;min-height:100vh}
+button{font:inherit}
+.muted{color:var(--muted)}.small{font-size:11.5px}.grow{flex:1;min-width:0}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;gap:16px;padding:10px 18px;border-bottom:1px solid var(--line);background:linear-gradient(#131c33,#0f172b);flex-wrap:wrap}
+.brand{font-family:var(--pix);font-size:12px;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand .sub{font-family:var(--ui);font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font-family:var(--game);font-size:18px;line-height:1;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:#0e1730;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:8px}
+.tabs button.on{background:#1b2750;color:var(--text);border-color:#3b4f8f}
+.tabs button:disabled{opacity:.45;cursor:not-allowed}
+.tabs small{font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.dot.busy{background:var(--work)}.dot.waiting{background:var(--wait)}.dot.idle{background:var(--idle)}
+.stats{margin-left:auto;display:flex;gap:16px;font-family:var(--game);font-size:19px;color:var(--muted);align-items:center}
+.stats b{color:var(--text)}.stats .warn b{color:var(--wait)}
+.stats .clock{font-variant-numeric:tabular-nums;color:var(--text);padding-left:12px;border-left:1px solid var(--line)}
+.ribbon{font-family:var(--pix);font-size:8px;color:#0a0f1e;background:var(--wait);padding:4px 8px;border-radius:4px;letter-spacing:1px}
+
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;flex:1;min-height:0}
+@media (max-width:1000px){main{grid-template-columns:1fr}.panel{border-left:0;border-top:1px solid var(--line)}}
+
+/* ---------- scene ---------- */
+.scene{padding:18px 18px 24px;overflow:auto;display:flex;flex-direction:column;gap:12px;align-items:center;background:radial-gradient(ellipse at 50% 30%,#101a3a 0,#0a0f1e 70%)}
+.stage{position:relative;line-height:0;background:#070b18;border:3px solid #26324f;border-radius:8px;box-shadow:0 12px 0 #05070f,0 0 0 1px #000;overflow:hidden}
+.stage canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;cursor:grab}
+.viewctl{position:absolute;right:10px;top:10px;z-index:6;pointer-events:auto;display:flex;gap:6px;align-items:center;opacity:.9}
+.viewctl #zoomchip{font-family:var(--game);font-size:16px;color:var(--muted);min-width:34px;text-align:center}
+.stage:fullscreen{border:0;border-radius:0;box-shadow:none;background:#04070f}
+.stage.max{position:fixed;inset:0;z-index:50;border:0;border-radius:0;box-shadow:none}
+.ov{position:absolute;inset:0;pointer-events:none;line-height:normal}
+.bub{position:absolute;transform:translate(-50%,-100%);background:#f7f9ff;color:#111a30;border:2px solid var(--sc);border-radius:3px;padding:1px 6px 2px;font-family:var(--game);font-size:calc(15px*var(--zs,1));line-height:1.1;white-space:nowrap;max-width:calc(150px*var(--zs,1));overflow:hidden;text-overflow:ellipsis;box-shadow:2px 2px 0 #000a;pointer-events:auto;cursor:pointer;--sc:var(--idle)}
+.bub::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--sc);border-bottom:0}
+.bub b{font-weight:400;color:#1b2750}
+.bub code{font-family:var(--game);font-size:calc(15px*var(--zs,1));background:#e2e8fa;padding:0 3px;border-radius:2px}
+.bub.working{--sc:var(--work)}.bub.thinking{--sc:var(--think)}.bub.waiting{--sc:var(--wait);background:#fff4e0;animation:shake 2.2s infinite}.bub.idle{--sc:var(--idle);opacity:.85}.bub.done,.bub.leaving,.bub.arriving{--sc:var(--done)}
+.bub.sel{box-shadow:0 0 0 2px #fff,2px 2px 0 #000a}
+.bub:hover,.bub.sel{max-width:none;z-index:5}
+.bub.waiting{max-width:calc(210px*var(--zs,1))}
+@keyframes shake{0%,90%,100%{transform:translate(-50%,-100%)}92%{transform:translate(calc(-50% - 2px),-100%)}94%{transform:translate(calc(-50% + 2px),-100%)}96%{transform:translate(calc(-50% - 1px),-100%)}}
+.nm{position:absolute;transform:translate(-50%,-50%);font-family:var(--game);font-size:calc(15px*var(--zs,1));line-height:1;color:#ffe9c9;text-shadow:0 1px 0 #000,0 0 3px #000;white-space:nowrap;pointer-events:none;letter-spacing:.3px}
+.nm.walk{color:#c9d3f5}
+.board{position:absolute;transform-origin:left top;transform:skewY(-26.565deg);font-family:var(--game);color:#1e2a3a;line-height:1;overflow:hidden;pointer-events:none;padding:2px 3px}
+.board .t{font-size:8px;letter-spacing:1px;color:#b1341f;font-family:var(--pix);margin-bottom:2px}
+.sign{position:absolute;transform-origin:left top;transform:skewY(26.565deg);font-family:var(--pix);font-size:7px;color:#ffe8a3;text-shadow:0 0 4px #ffcf5a;letter-spacing:1px;pointer-events:none;white-space:nowrap}
+.chip{display:inline-block;font-family:var(--pix);font-size:calc(6px*var(--zs,1));line-height:1;color:#0a0f1e;padding:2px 3px;border-radius:2px;vertical-align:middle;margin-left:4px;letter-spacing:.5px}
+.nm{pointer-events:auto;cursor:pointer}
+.chip.warn{background:#ff4d4d;color:#fff;animation:blinkw 1s steps(2) infinite}
+@keyframes blinkw{50%{opacity:.35}}
+.hc-bar i.hot{background:linear-gradient(90deg,#ffb347,#ff4d4d)}
+.bar i.hot{background:linear-gradient(90deg,#ffb347,#ff4d4d)}
+.hcard{position:fixed;width:350px;background:#0d1527;border:2px solid #3b4f8f;border-radius:6px;box-shadow:4px 4px 0 #000c,0 0 0 1px #000;color:var(--text);font-family:var(--ui);font-size:12px;pointer-events:auto;z-index:1000;line-height:1.35}
+.hcard[hidden]{display:none}
+.hcard.pinned{border-color:#fff}
+.hc-head{display:flex;gap:10px;padding:10px;border-bottom:1px dashed #22304f}
+.hc-port{width:84px;height:120px;image-rendering:pixelated;background:#141b36;border:2px solid #26324f;border-radius:4px;flex:0 0 auto}
+.hc-title{min-width:0;flex:1}
+.hc-name{font-family:var(--game);font-size:22px;line-height:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hc-name .chip{font-size:8px;padding:3px 4px;margin-left:0}
+.hc-type{color:var(--muted);font-size:11.5px;margin-top:3px}
+.hc-state{font-family:var(--game);font-size:17px;margin:6px 0;display:flex;align-items:center;gap:6px}
+.hc-kv{display:grid;grid-template-columns:56px minmax(0,1fr);gap:3px 8px;margin:0;font-size:12px}
+.hc-kv dt{color:var(--muted)}.hc-kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.hc-kv dd .bub-inline b{font-weight:600}
+.hc-sec{padding:8px 10px;border-bottom:1px dashed #22304f}
+.hc-wait{background:#2a1e08;color:#ffd9a3;padding:6px 10px;border-bottom:1px dashed #6b4d1a;font-family:var(--game);font-size:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hc-bar{height:7px;background:#1a2440;border-radius:4px;overflow:hidden;margin:3px 0 2px}.hc-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--think),var(--work))}
+.hc-foot{padding:5px 10px;color:var(--muted);font-size:10.5px;background:#0a1226;border-radius:0 0 4px 4px}
+.hcard code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#0a1226;padding:0 3px;border-radius:3px}
+.legend{display:flex;gap:14px 22px;flex-wrap:wrap;justify-content:center;font-family:var(--game);font-size:17px;color:var(--muted);max-width:960px}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;display:inline-block;border-radius:2px}
+
+/* ---------- side panel ---------- */
+.panel{border-left:1px solid var(--line);background:var(--panel);padding:16px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card h3{margin:0 0 8px;font-family:var(--game);font-size:21px;font-weight:400;color:#c9d3f5;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.card.attn{border-color:#6b4d1a;background:linear-gradient(#1a1608,#0d1527)}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed #22304f;font-size:12.5px}
+.row:first-of-type{border-top:0}.row.click{cursor:pointer}.row.click:hover{background:#0f1830;margin:0 -6px;padding-left:6px;padding-right:6px;border-radius:6px}
+.row.on{background:#131d38;margin:0 -6px;padding-left:6px;padding-right:6px;border-radius:6px}
+.bar{height:7px;background:#1a2440;border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--think),var(--work));border-radius:4px}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 14px;font-size:12.5px;margin:0}
+.kv dt{color:var(--muted)}.kv dd{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prompt{margin:0;font-size:13px;line-height:1.45;color:#e6ecff;font-style:italic}
+.feed{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.ev{display:grid;grid-template-columns:40px 20px minmax(0,1fr);gap:6px;align-items:start;line-height:1.35}
+.ev .t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:11.5px;padding-top:1px}
+.ev .w{color:#c9d3f5}
+.ev code,.card code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#0a1226;padding:1px 4px;border-radius:4px;word-break:break-all}
+.ev.you .w{color:var(--wait)}
+.btn{font-family:var(--game);font-size:16px;line-height:1;padding:5px 9px;border-radius:6px;border:1px solid #3b4f8f;background:#1b2750;color:var(--text);cursor:pointer;white-space:nowrap}
+.btn:hover{background:#243466}
+.src{margin:0;padding-left:18px;font-size:12px;line-height:1.55;color:var(--muted)}
+footer{padding:8px 18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+kbd{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#1a2440;border:1px solid #2c3a66;border-radius:4px;padding:0 5px}
+.errbar{position:fixed;right:14px;bottom:44px;z-index:2000;display:flex;flex-direction:column;gap:6px;max-width:460px}
+.errbar[hidden]{display:none}
+.err{background:#2a0e12;border:2px solid #ff4d4d;border-radius:6px;padding:8px 10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#ffd9d9;box-shadow:3px 3px 0 #000a;display:flex;gap:8px;align-items:flex-start;line-height:1.35}
+.err .t{color:#ff8a8a;white-space:nowrap}
+.err .m{flex:1;min-width:0;overflow-wrap:anywhere}
+.err button{background:none;border:1px solid #ff4d4d66;color:#ffd9d9;border-radius:4px;cursor:pointer;font-size:11px;padding:1px 6px}
+.err button:hover{background:#ff4d4d33}
+.diag{cursor:pointer;color:var(--muted)}
+.diag.bad{color:#ff8a8a}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🏢 AGENT OFFICE <span class="sub">Mockup D · isometric room, one session</span></div>
+  <nav class="tabs">
+    <button class="on"><span class="dot busy"></span>agent workspace<small id="tab-count"></small></button>
+    <button disabled title="Other sessions are out of scope for this mockup"><span class="dot waiting"></span>jenkins-c0<small>2</small></button>
+    <button disabled title="Other sessions are out of scope for this mockup"><span class="dot idle"></span>harness<small>1</small></button>
+  </nav>
+  <div class="stats"><span class="ribbon">SAMPLE DATA</span><span id="st-agents"></span><span class="warn" id="st-wait"></span><span class="clock" id="clock"></span></div>
+</header>
+<main>
+  <section class="scene" id="scene">
+    <div class="stage" id="stage"><canvas id="cv"></canvas><div class="ov" id="ov"></div><div class="viewctl"><button class="btn" id="zout" title="Zoom out (−)">−</button><span id="zoomchip">2×</span><button class="btn" id="zin" title="Zoom in (+)">+</button><button class="btn" id="recenter" title="Reset pan and zoom">⌖ recenter</button><button class="btn" id="fs" title="Full screen (F)">⛶ full screen</button></div></div>
+    <div class="legend">
+      <span><i style="background:var(--work)"></i>typing = running a tool</span>
+      <span><i style="background:var(--think)"></i>… = thinking</span>
+      <span><i style="background:var(--wait)"></i>raised hand + ! = needs approval</span>
+      <span><i style="background:var(--idle)"></i>zz = idle</span>
+      <span><i style="background:var(--done)"></i>door = subagent joins / leaves</span>
+      <span>🖥 rack blinks on every tool call</span>
+      <span><i style="background:var(--work)"></i>chip on the name plate = model · hover a person for details, click to pin</span>
+      <span><i style="background:#ff4d4d"></i>red triangle = context over 50% (test threshold), compaction coming · crown = session lead</span>
+    </div>
+  </section>
+  <aside class="panel" id="panel"></aside>
+</main>
+<div class="errbar" id="errbar" hidden></div>
+<footer>
+  <span>The room is one Claude Code session. Every desk is an agent: the session lead at the big desk, subagents at the others. Click a person or their bubble to filter the activity feed.</span>
+  <span>drag to pan · wheel or pinch to zoom · <kbd>+</kbd><kbd>−</kbd> zoom · <kbd>F</kbd> full screen · <kbd>Esc</kbd> clear selection · <span class="diag" id="diag" title="Show or hide error reports">🩺 no errors</span></span>
+</footer>
+
+<script>
+/* ===================== sample data ===================== */
+const NOW=Date.now(),SEC=1000,MIN=60*SEC;
+const ICON={Grep:'🔍',Read:'📖',Bash:'💻',Edit:'✏️',Write:'📝',Agent:'🧬',Glob:'🗂️',WebFetch:'🌐'};
+const STATE_LABEL={working:'working',thinking:'thinking',waiting:'needs approval',idle:'idle',done:'finished',arriving:'joining',leaving:'leaving',compacting:'compacting context'};
+const CTX_WARN=50,CTX_COMPACT=96;   // warn threshold lowered to 50 for testing; production value 85
+const TYPE_LABEL={lead:'Session lead',Explore:'Explore subagent',Plan:'Plan subagent','general-purpose':'General subagent','code-review':'Review subagent'};
+const PAL={lead:{shirt:'#3b4fd8',hair:'#2b1d0e',pants:'#26305c',acc:'tie'},Explore:{shirt:'#2f9e6b',hair:'#5a3a1a',pants:'#2b3a4b',acc:'cap'},Plan:{shirt:'#7b5bd6',hair:'#8a8a8a',pants:'#3a2a5a',acc:'glasses'},'general-purpose':{shirt:'#e07a2f',hair:'#1a1a1a',pants:'#3a2a1a',acc:'hat'},'code-review':{shirt:'#d64b4b',hair:'#3a2a1a',pants:'#2a1a1a',acc:'badge'}};
+const SKIN='#f2c9a0';
+const MODEL={'claude-fable-5-1':{chip:'F5.1',color:'#e0b354'},'claude-opus-5':{chip:'O5',color:'#b48cff'},'claude-sonnet-5':{chip:'S5',color:'#6aa6ff'},'claude-haiku-4-5-20251001':{chip:'H4.5',color:'#3ddc97'}};
+function modelOf(a){return MODEL[a.model]||{chip:'?',color:'#7f8ba6'}}
+function chipHTML(a){const m=modelOf(a);return `<i class="chip" style="background:${m.color}" title="${esc(a.model||'')}">${m.chip}</i>`}
+const STC={working:'#3ddc97',thinking:'#6aa6ff',waiting:'#ffb347',idle:'#7f8ba6',done:'#b48cff',arriving:'#b48cff',leaving:'#b48cff',compacting:'#ff4d4d'};
+
+const session={pid:87328,name:'agent workspace',cwd:'~/Documents/GitHub/agent-workspace',branch:'main',status:'busy',startedAt:NOW-11*MIN,ctx:23,turns:6,tokIn:148200,tokOut:9400,model:'fable-5.1',
+ prompt:'Make an isometric pixel-art view of a single session and its agents',
+ feed:[
+  {t:NOW-11*MIN,who:'you',text:'Make an isometric pixel-art view of a single session and its agents'},
+  {t:NOW-10*MIN,who:'Lead',tool:'Bash',text:'ls -la ~/.claude/sessions'},
+  {t:NOW-9*MIN,who:'Lead',tool:'Agent',text:'spawned Explore · hooks'},
+  {t:NOW-9*MIN+5*SEC,who:'Lead',tool:'Agent',text:'spawned Explore · registry'},
+  {t:NOW-8*MIN,who:'Lead',tool:'Agent',text:'spawned Architect (Plan)'},
+  {t:NOW-7*MIN,who:'Architect',tool:'Write',text:'plan.md · 3 options'},
+  {t:NOW-6*MIN,who:'Lead',tool:'Agent',text:'spawned Builder'},
+  {t:NOW-5*MIN,who:'Builder',tool:'Write',text:'server.py'},
+  {t:NOW-3*MIN,who:'Explore · hooks',tool:'Grep',text:'"SubagentStart" in ~/.claude'},
+  {t:NOW-2*MIN,who:'Explore · registry',tool:'Read',text:'sessions/87328.json'},
+  {t:NOW-50*SEC,who:'Builder',tool:'Edit',text:'server.py · waiting for approval'},
+  {t:NOW-40*SEC,who:'Lead',text:'thinking…'},
+ ]};
+session.feed.sort((a,b)=>b.t-a.t);
+
+/* desks in tile coordinates: i runs to the lower-right, j to the lower-left. Row A backs onto the north wall, row B faces the aisle. */
+const DESKS={A1:{i:1,j:2,w:3},A2:{i:5,j:2,w:2},A3:{i:8,j:2,w:2},B1:{i:2,j:6.5,w:2},B2:{i:5,j:6.5,w:2},B3:{i:8,j:6.5,w:2}};
+let agents=[
+ {id:'main',type:'lead',name:'Lead',state:'thinking',tool:null,task:'Reviewing what the subagents found',since:NOW-40*SEC,desk:'A1',model:'claude-fable-5-1',effort:'xhigh',ctx:42,ctxLimit:1000000,tokIn:148200,tokOut:9400,tokThink:3100,cacheRead:308000,cacheWrite:100,tools:{Bash:24,Read:18,ListAgents:1},messages:88,log:'projects/…/5c704dc8-c32c-….jsonl'},
+ {id:'ex1',type:'Explore',name:'Explore · hooks',state:'working',tool:'Grep',task:'"SubagentStart" in ~/.claude',since:NOW-3*MIN,desk:'A2',model:'claude-haiku-4-5-20251001',effort:'low',ctx:18,ctxLimit:200000,tokIn:41200,tokOut:2100,tokThink:600,cacheRead:38900,cacheWrite:1100,tools:{Grep:7,Read:4,Glob:2},brief:'Find every place hook events are written and how subagents appear in transcripts',spawnedAt:NOW-9*MIN,log:'subagents/agent-a1f3.jsonl'},
+ {id:'ex2',type:'Explore',name:'Explore · registry',state:'working',tool:'Read',task:'sessions/87328.json',since:NOW-2*MIN,desk:'A3',model:'claude-haiku-4-5-20251001',effort:'low',ctx:12,ctxLimit:200000,tokIn:22000,tokOut:1200,tokThink:300,cacheRead:20000,cacheWrite:800,tools:{Read:5,Glob:1},brief:'Read every file in ~/.claude/sessions and describe the schema',spawnedAt:NOW-9*MIN+5*SEC,log:'subagents/agent-b7c2.jsonl'},
+ {id:'gp1',type:'general-purpose',name:'Builder',state:'waiting',tool:'Edit',task:'server.py',since:NOW-50*SEC,desk:'B1',model:'claude-sonnet-5',effort:'medium',ctx:31,ctxLimit:1000000,tokIn:96000,tokOut:7800,tokThink:1200,cacheRead:88000,cacheWrite:2400,tools:{Write:3,Bash:6,Edit:2},brief:'Build the local server that tails transcripts and streams updates over SSE',spawnedAt:NOW-6*MIN,log:'subagents/agent-c9d4.jsonl'},
+ {id:'pl1',type:'Plan',name:'Architect',state:'done',tool:null,task:'Plan delivered · 3 options',since:NOW-7*MIN,desk:'B2',model:'claude-opus-5',effort:'high',ctx:27,ctxLimit:1000000,tokIn:70000,tokOut:5100,tokThink:4400,cacheRead:60000,cacheWrite:1900,tools:{Read:9,Grep:3,Write:1},brief:'Plan the dashboard architecture and propose three options with trade-offs',spawnedAt:NOW-8*MIN,log:'subagents/agent-d1e5.jsonl'},
+];
+const ROTATE={
+ Explore:[{tool:'Grep',task:'"SubagentStop" in ~/.claude'},{tool:'Read',task:'subagents/agent-a1f3.jsonl'},{tool:'Glob',task:'~/.claude/sessions/*.json'},{tool:'Grep',task:'"messagingSocketPath"'},{tool:'Read',task:'sessions/30536.json'}],
+ 'general-purpose':[{tool:'Bash',task:'python3 server.py --check'},{tool:'Edit',task:'server.py · tail loop'},{tool:'Bash',task:'curl -s localhost:7777/api/sessions'},{tool:'Write',task:'static/index.html'}],
+ 'code-review':[{tool:'Read',task:'server.py'},{tool:'Grep',task:'"except:" in server.py'},{tool:'Read',task:'static/index.html'}],
+};
+const NEWCOMERS=[
+ {type:'Explore',name:'Explore · sockets',tool:'Glob',task:'/tmp/cc-socks/*.sock',model:'claude-haiku-4-5-20251001',effort:'low',ctxLimit:200000,brief:'List the messaging sockets and match them to live pids',log:'subagents/agent-e2f6.jsonl'},
+ {type:'code-review',name:'Reviewer',tool:'Read',task:'server.py',model:'claude-sonnet-5',effort:'medium',ctxLimit:1000000,brief:'Review server.py for correctness and error handling',log:'subagents/agent-f3a7.jsonl'},
+ {type:'Explore',name:'Explore · transcripts',tool:'Grep',task:'"tool_use" in projects/**/*.jsonl',model:'claude-haiku-4-5-20251001',effort:'low',ctxLimit:200000,brief:'Find how tool_use blocks are laid out in transcripts',log:'subagents/agent-a4b8.jsonl'},
+ {type:'Plan',name:'Architect II',tool:'Read',task:'plan.md',model:'claude-opus-5',effort:'high',ctxLimit:1000000,brief:'Revise the plan with the new findings',log:'subagents/agent-b5c9.jsonl'}];
+let spawnedTotal=4,finishedTotal=0;
+
+/* ===================== helpers ===================== */
+const $=id=>document.getElementById(id);
+let selected=null,spawnIdx=0,rackBlink=0;
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function ago(t){let d=Math.max(0,Date.now()-t)/1000;if(d<60)return Math.floor(d)+'s';if(d<3600)return Math.floor(d/60)+'m';return Math.floor(d/3600)+'h '+Math.floor(d%3600/60)+'m'}
+function agoSpan(t){return `<span data-ago="${t}">${ago(t)}</span>`}
+function hhmm(t){return new Date(t).toTimeString().slice(0,5)}
+function fmtTok(n){return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?Math.round(n/1e3)+'k':n}
+function pushFeed(who,tool,text){session.feed.unshift({t:Date.now(),who,tool,text});rackBlink=performance.now();renderPanel()}
+function present(){return agents.filter(a=>a.phase!=='gone')}
+
+/* ===================== isometric canvas ===================== */
+const ART_W=480,ART_H=284,TW=32,TH=16,ROOM_W=11,ROOM_D=9,WALL_H=46,ORIGIN={x:246,y:52};
+let S=2,S0=2;const ORIGIN0={x:ORIGIN.x,y:ORIGIN.y};
+const cv=$('cv');let ctx=cv.getContext('2d');
+const CAM={x:0,y:0};
+function iso(i,j,z=0){return {x:ORIGIN.x+CAM.x+(i-j)*TW/2,y:ORIGIN.y+CAM.y+(i+j)*TH/2-z}}
+/* crisp scanline polygon fill: every row is a run of whole pixels */
+function poly(pts,color,alpha){
+ if(alpha!==undefined)ctx.globalAlpha=alpha;
+ ctx.fillStyle=color;
+ const ys=pts.map(p=>p[1]);const minY=Math.floor(Math.min(...ys)),maxY=Math.ceil(Math.max(...ys));
+ for(let y=minY;y<maxY;y++){
+  const cy=y+0.5,xs=[];
+  for(let k=0;k<pts.length;k++){const [x1,y1]=pts[k],[x2,y2]=pts[(k+1)%pts.length];
+   if((cy>=y1&&cy<y2)||(cy>=y2&&cy<y1))xs.push(x1+(cy-y1)*(x2-x1)/(y2-y1))}
+  xs.sort((a,b)=>a-b);
+  for(let k=0;k+1<xs.length;k+=2){const x0=Math.round(xs[k]),x1=Math.round(xs[k+1]);if(x1>x0)ctx.fillRect(x0,y,x1-x0,1)}
+ }
+ if(alpha!==undefined)ctx.globalAlpha=1;
+}
+const P=(a)=>[a.x,a.y];
+function R(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+function tile(i,j,c,grout){const p=iso(i,j);if(grout)poly([[p.x,p.y],[p.x+16,p.y+8],[p.x,p.y+16],[p.x-16,p.y+8]],grout);poly([[p.x,p.y+1],[p.x+14,p.y+8],[p.x,p.y+15],[p.x-14,p.y+8]],c)}
+function box(i,j,w,d,z,h,cols){
+ const [top,left,right]=cols;
+ const a=iso(i,j,z+h),b=iso(i+w,j,z+h),c=iso(i+w,j+d,z+h),dd=iso(i,j+d,z+h),c0=iso(i+w,j+d,z),d0=iso(i,j+d,z),b0=iso(i+w,j,z);
+ poly([P(dd),P(c),P(c0),P(d0)],left);poly([P(b),P(c),P(c0),P(b0)],right);poly([P(a),P(b),P(c),P(dd)],top);
+}
+function wallFaceN(i0,i1,z0,z1,c,alpha){poly([P(iso(i0,0,z1)),P(iso(i1,0,z1)),P(iso(i1,0,z0)),P(iso(i0,0,z0))],c,alpha)}
+function wallFaceW(j0,j1,z0,z1,c,alpha){poly([P(iso(0,j0,z1)),P(iso(0,j1,z1)),P(iso(0,j1,z0)),P(iso(0,j0,z0))],c,alpha)}
+
+function drawWalls(f){
+ // west wall (along j) and north wall (along i)
+ wallFaceW(0,ROOM_D,0,WALL_H,'#3a4780');wallFaceW(0,ROOM_D,0,9,'#2b3766');wallFaceW(0,ROOM_D,9,10,'#1f2950');
+ wallFaceN(0,ROOM_W,0,WALL_H,'#46569a');wallFaceN(0,ROOM_W,0,9,'#33407a');wallFaceN(0,ROOM_W,9,10,'#26305e');
+ // wall tops
+ poly([P(iso(0,0,WALL_H+3)),P(iso(ROOM_W,0,WALL_H+3)),P(iso(ROOM_W,0,WALL_H)),P(iso(0,0,WALL_H))],'#5a6bb0');
+ poly([P(iso(0,0,WALL_H+3)),P(iso(0,ROOM_D,WALL_H+3)),P(iso(0,ROOM_D,WALL_H)),P(iso(0,0,WALL_H))],'#4d5c9c');
+ R(iso(0,0).x-1,iso(0,0,WALL_H+3).y,2,WALL_H+3,'#1a2242');
+ // windows on the north wall: frame, night sky, stars, moon
+ const win=(i0,i1)=>{wallFaceN(i0-0.1,i1+0.1,17,39,'#7b8bc8');wallFaceN(i0,i1,18,38,'#0b1230');
+  const st=[[0.2,30],[0.55,24],[0.8,33],[1.3,21],[1.6,29],[0.4,35]];st.forEach(([u,z],k)=>{if(u<i1-i0){const p=iso(i0+u,0,z);R(p.x,p.y,1,1,(f+k)%7===0?'#8fa3ff':'#fff')}});
+  const bar=iso((i0+i1)/2,0,18);R(bar.x,bar.y-20,1,20,'#7b8bc8')};
+ win(4.6,6.4);win(7.4,9.2);
+ const moon=iso(8.9,0,35);R(moon.x-3,moon.y-3,6,6,'#f4f0d8');R(moon.x-1,moon.y-2,3,4,'#d9d3b2');
+ // door on the west wall
+ wallFaceW(4.0,5.6,0,36,'#7b8bc8');wallFaceW(4.15,5.45,0,34,'#141b3a');wallFaceW(4.78,4.83,0,34,'#2a3563');wallFaceW(4.25,4.7,20,30,'#243055');wallFaceW(4.9,5.35,20,30,'#243055');
+ const kn=iso(0,4.6,16);R(kn.x,kn.y,1,2,'#ffd166');const kn2=iso(0,5.05,16);R(kn2.x,kn2.y,1,2,'#ffd166');
+ wallFaceW(4.4,5.2,37,41,(f%16<8)?'#3ddc97':'#2a9a6a');
+ // whiteboard on the west wall (text is an HTML overlay)
+ wallFaceW(0.5,3.4,15,40,'#8892b8');wallFaceW(0.6,3.3,16,39,'#f4f6ff');wallFaceW(0.6,3.3,15,16,'#c9a24a');
+ // neon sign on the north wall (text overlay)
+ wallFaceN(0.4,3.6,32,42,'#1a1408');
+}
+function drawFloor(){
+ for(let i=0;i<ROOM_W;i++)for(let j=0;j<ROOM_D;j++){
+  let c=((i+j)&1)?'#2f3a63':'#343f6b',g='#252e52';
+  if(j===4){c=((i+j)&1)?'#5a2a2a':'#4f2525';g='#3a1a1a'}  // aisle rug
+  tile(i,j,c,g);
+ }
+ const a=iso(0,ROOM_D),b=iso(ROOM_W,ROOM_D),c=iso(ROOM_W,0);
+ poly([P(a),P(b),[b.x,b.y+12],[a.x,a.y+12]],'#1a2242');poly([P(b),P(c),[c.x,c.y+12],[b.x,b.y+12]],'#111830');
+}
+function drawDesk(d,agent,f){
+ box(d.i,d.j,d.w,1,0,14,['#a8733a','#7a5230','#5b3c22']);
+ // legs
+ const l1=iso(d.i+0.1,d.j+1),l2=iso(d.i+d.w-0.1,d.j+1);R(l1.x-1,l1.y-8,2,8,'#4a2f18');R(l2.x-1,l2.y-8,2,8,'#4a2f18');
+ // paper + mug
+ const pp=iso(d.i+0.35,d.j+0.35,14);poly([[pp.x,pp.y],[pp.x+5,pp.y+2.5],[pp.x,pp.y+5],[pp.x-5,pp.y+2.5]],'#e8ecf7');
+ // monitor(s): back faces the viewer, glow spills onto the desk toward the chair
+ const st=agent?agent.state:null;const glow=st?STC[st]:'#1b2340';
+ const mons=d.w>2?[d.i+d.w/2-0.55,d.i+d.w/2+0.45]:[d.i+d.w/2];
+ mons.forEach(mi=>{
+  if(st&&st!=='idle')poly([P(iso(mi-0.45,d.j+0.05,14)),P(iso(mi+0.45,d.j+0.05,14)),P(iso(mi+0.45,d.j+0.6,14)),P(iso(mi-0.45,d.j+0.6,14))],glow,.28);
+  box(mi-0.32,d.j+0.62,0.64,0.12,14,11,['#3a4468','#1e2540','#151a2e']);
+  const rim=iso(mi,d.j+0.62,25);R(rim.x-5,rim.y-1,10,1,st&&st!=='idle'?glow:'#2a3563');
+  const stand=iso(mi,d.j+0.7,14);R(stand.x-1,stand.y-1,2,1,'#333');
+  if(agent&&(st==='working')){for(let k=0;k<2;k++){const ph=(f*2+k*7)%14;const p=iso(mi+(k?0.15:-0.15),d.j+0.5,26+ph);ctx.globalAlpha=1-ph/14;R(p.x,p.y,1,1,glow);ctx.globalAlpha=1}}
+ });
+}
+function drawChair(d){const ci=d.i+d.w/2,cj=d.j-0.45;box(ci-0.5,cj-0.55,1.0,0.6,0,6,['#6b7bb8','#3f4b7a','#2e375c']);box(ci-0.5,cj-0.65,1.0,0.14,6,12,['#6b7bb8','#3f4b7a','#2e375c'])}
+function drawGlyph(x,y,g,c){ctx.fillStyle=c;for(let r=0;r<g.length;r++)for(let k=0;k<g[r].length;k++)if(g[r][k]==='1')ctx.fillRect(Math.round(x)+k,Math.round(y)+r,1,1)}
+const G={'!':['11','11','11','11','00','11'],z:['111','001','010','100','111'],dot:['1']};
+/* ---- isometric people: every body part is a small shaded cuboid in the same projection as the furniture ---- */
+const SHC=new Map();
+function shade(hex){const n=parseInt(hex.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255;const cl=v=>Math.max(0,Math.min(255,Math.round(v)));const H=(r,g,b)=>'#'+[cl(r),cl(g),cl(b)].map(v=>v.toString(16).padStart(2,'0')).join('');return [H(r*1.15+22,g*1.15+22,b*1.15+22),hex,H(r*.6,g*.6,b*.6)]}
+function sh(c){if(!SHC.has(c))SHC.set(c,shade(c));return SHC.get(c)}
+/* cuboid at iso-pixel offsets (u along i, v along j, z up) from a screen anchor; w,d,h are its extents */
+function cub(x0,y0,u,v,z,w,d,h,cols){
+ const fx=x0+(u+w)-(v+d),fy=y0+(u+w+v+d)/2-z,[top,left,right]=cols;
+ poly([[fx,fy],[fx-w,fy-w/2],[fx-w,fy-w/2-h],[fx,fy-h]],left);
+ poly([[fx,fy],[fx+d,fy-d/2],[fx+d,fy-d/2-h],[fx,fy-h]],right);
+ poly([[fx,fy-h],[fx+d,fy-d/2-h],[fx+d-w,fy-d/2-w/2-h],[fx-w,fy-w/2-h]],top);
+}
+function drawFigure(bx,by,a,f,o){
+ const pal=PAL[a.type]||PAL.lead,st=a.state,{seated,facing,walking,wf}=o;
+ const axisI=(facing==='SW'||facing==='NE');                 // shoulders run along the i axis
+ const front=facing==='SW'?'L':(facing==='SE'?'R':null);     // which visible face carries the face; null = we see the back
+ const draw=(mono)=>{
+  const C=c=>mono?[mono,mono,mono]:sh(c);
+  const skin=C(SKIN),shirt=C(pal.shirt),pants=C(pal.pants),hair=C(pal.hair),yellow=C('#ffcc33'),green=C('#2f9e6b');
+  const K=(u,v,z,w,d,h,c)=>cub(bx,by,u,v,z,w,d,h,c);
+  if(!seated){const l=walking?wf:0;
+   if(axisI){K(-4,-2,0,3,3,6-l,pants);K(1,-2,0,3,3,5+l,pants)}else{K(-2,-4,0,3,3,6-l,pants);K(-2,1,0,3,3,5+l,pants)}}
+  if(axisI)K(-4,-2,6,8,4,8,shirt);else K(-2,-4,6,4,8,8,shirt);
+  const armPos=axisI?[[-6,-1],[4,-1]]:[[-1,-6],[-1,4]];
+  if(st==='working'&&seated){const o2=f%2;                   // forearms forward on the desk, hands alternate
+   if(axisI){K(-6,1,9,2,4,2,shirt);K(4,1,9,2,4,2,shirt);K(-6,5,8+o2,2,2,2,skin);K(4,5,9-o2,2,2,2,skin)}
+   else{K(1,-6,9,4,2,2,shirt);K(1,4,9,4,2,2,shirt);K(5,-6,8+o2,2,2,2,skin);K(5,4,9-o2,2,2,2,skin)}}
+  else if(st==='waiting'){const [a1,a2]=armPos;              // one arm straight up
+   K(a1[0],a1[1],6,2,2,2,skin);K(a1[0],a1[1],8,2,2,6,shirt);K(a2[0],a2[1],8,2,2,12,shirt);K(a2[0],a2[1],20,2,2,2,skin)}
+  else{const sw=walking?wf:0,[a1,a2]=armPos;
+   K(a1[0],a1[1],6+sw,2,2,2,skin);K(a1[0],a1[1],8+sw,2,2,6,shirt);K(a2[0],a2[1],7-sw,2,2,2,skin);K(a2[0],a2[1],9-sw,2,2,6,shirt)}
+  const hz=14+(st==='thinking'?(f%4<2?0:-1):0)-(st==='idle'?1:0);
+  K(-3,-3,hz,6,6,7,skin);
+  K(-3,-3,hz+(front?5:3),6,6,front?3:5,hair);                // fringe, or the back of the head
+  if(pal.acc==='hat'){K(-4,-4,hz+7,8,8,2,yellow);K(-3,-3,hz+9,6,6,3,yellow)}
+  if(a.type==='lead'){const gold=C('#e0b354');K(-4,-4,hz+7,8,8,2,gold);K(-4,-4,hz+9,2,2,2,gold);K(2,-4,hz+9,2,2,2,gold);K(-4,2,hz+9,2,2,2,gold);K(2,2,hz+9,2,2,2,gold);K(-1,-1,hz+9,2,2,3,gold)}
+  if(pal.acc==='cap'){K(-3,-3,hz+7,6,6,2,green);
+   if(facing==='SW')K(-3,3,hz+7,6,3,1,green);else if(facing==='SE')K(3,-3,hz+7,3,6,1,green);else if(facing==='NE')K(-3,-6,hz+7,6,3,1,green);else K(-6,-3,hz+7,3,6,1,green)}
+  if(!mono&&front){                                          // surface details on the front face
+   const eyeH=st==='idle'?1:2;
+   const F=front==='L'?(u,z)=>[bx+u-3,by+(u+3)/2-z]:(v,z)=>[bx+3-v,by+(3+v)/2-z];
+   for(const t of [-2,1]){const [x,y]=F(t,hz+3+eyeH);R(x,y,1,eyeH,'#111')}
+   if(pal.acc==='glasses'){for(const t of [-3,-2,-1,1,2]){const [x,y]=F(t,hz+5);R(x,y,1,1,'#dfe6ee')}}
+   if(a.type==='lead'){const J=front==='L'?(u,z)=>[bx+u-4,by+(u+4)/2-z]:(v,z)=>[bx+4-v,by+(4+v)/2-z];const [jx,jy]=J(0,hz+9);R(jx,jy,1,1,'#ff4d4d')}  // crown jewel
+   const T=front==='L'?(u,z)=>[bx+u-2,by+(u+2)/2-z]:(v,z)=>[bx+2-v,by+(2+v)/2-z];  // torso front face
+   if(pal.acc==='tie'){const [x,y]=T(0,14);R(x,y,1,4,'#ffd166')}
+   if(pal.acc==='badge'){const [x,y]=T(2,13);R(x,y,2,2,'#ffd166')}
+  }
+  return by-hz-(a.type==='lead'?13:10);                      // screen y of the top of the head (crown adds height)
+ };
+ for(const [ox,oy] of [[1,0],[-1,0],[0,1],[0,-1]]){ctx.save();ctx.translate(ox,oy);draw(o.outline||'#0a0f1e');ctx.restore()}
+ const hy=draw(null);
+ if(o.fx){const sc=STC[st]||'#fff';
+  if(st==='thinking'){for(let k=0;k<3;k++)if((f%4)>k)R(bx+9+k*2,hy-2-k,1,1,sc)}
+  if(st==='waiting'){drawGlyph(bx+9,hy-9+(f%2),G['!'],sc)}
+  if(st==='idle'){for(let k=0;k<3;k++){const ph=(f+k*3)%9;ctx.globalAlpha=1-ph/9;drawGlyph(bx+9+k*2,hy-2-ph-k*2,G.z,'#c9d3f5');ctx.globalAlpha=1}}
+  if(st==='compacting'){const c=f%2?'#ff4d4d':'#ffb347';for(let k=0;k<3;k++){R(bx-4+k*4,hy-5-((f+k)%3),2,2,c)}}
+  if(o.ctxWarn&&st!=='compacting')drawWarn(bx,hy-14+(f%2),f);
+  if(st==='done'){R(bx+8,hy-5,8,8,'#b48cff');R(bx+10,hy-2,1,2,'#0a0f1e');R(bx+11,hy-1,1,1,'#0a0f1e');R(bx+12,hy-2,1,1,'#0a0f1e');R(bx+13,hy-3,1,1,'#0a0f1e');R(bx+14,hy-4,1,1,'#0a0f1e')}}
+ return hy;
+}
+function drawWarn(cx,top,f){                                   // warning triangle with a white !
+ const c=f%2?'#ff4d4d':'#ffb347',W=[1,3,5,5,7,7,9];
+ for(let r=0;r<W.length;r++)R(cx-(W[r]-1)/2,top+r,W[r],1,c);
+ R(cx,top+2,1,3,'#fff');R(cx,top+6,1,1,'#fff');
+}
+function drawChar(a,f){
+ const seated=a.phase==='seated';
+ const p=iso(a.pos.i,a.pos.j,0);
+ const bx=Math.round(p.x),by=Math.round(p.y);
+ const walking=a.phase==='leaving'||a.phase==='arriving';
+ const wf=Math.floor(a.walkT*7)%2;
+ const facing=seated?'SW':(a.facing||'SW');
+ poly([[bx,by-4],[bx+9,by],[bx,by+4],[bx-9,by]],'#000',.35);
+ const lit=selected===a.id||hoverId===a.id;
+ if(lit){const q=iso(a.pos.i,a.pos.j);poly([[q.x,q.y-10],[q.x+20,q.y],[q.x,q.y+10],[q.x-20,q.y]],'#fff',selected===a.id?.22+.18*Math.sin(f):.14)}
+ ctx.globalAlpha=(a.phase==='leaving'&&a.path.length===0)?0.4:1;
+ const hy=drawFigure(bx,by,a,f,{seated,facing,walking,wf,outline:lit?'#ffffff':'#0a0f1e',fx:true,ctxWarn:a.ctx>=CTX_WARN});
+ ctx.globalAlpha=1;
+ a.screen={x:bx,y:by,hy};
+}
+function drawRack(f){
+ box(9.6,0.12,0.7,0.6,0,30,['#3a4468','#1e2540','#151a2e']);
+ const blink=performance.now()-rackBlink<600;
+ for(let k=0;k<5;k++){const p=iso(9.68,0.72,6+k*4.5);const on=blink?(f+k)%2===0:(f+k)%9===0;R(p.x,p.y,1,1,on?(k%2?'#ffb347':'#3ddc97'):'#22304f');R(p.x+3,p.y,4,1,'#0e1424')}
+}
+function drawPlant(){box(10.2,7.2,0.6,0.6,0,6,['#a8733a','#7a5230','#5b3c22']);const p=iso(10.5,7.5,6);R(p.x-4,p.y-8,8,4,'#2f7a2a');R(p.x-6,p.y-6,12,3,'#3a9a3a');R(p.x-3,p.y-11,6,3,'#4bb04b');R(p.x-1,p.y-13,2,2,'#4bb04b')}
+function drawCoffee(f){box(0.15,7.3,0.6,0.6,0,13,['#b8c0d0','#7f8a9c','#5f6a7c']);const p=iso(0.75,7.9,9);R(p.x-2,p.y-1,1,1,(f%10<5)?'#ff4d4d':'#5a1a1a');const s=iso(0.45,7.6,14);if(f%3)R(s.x,s.y-(f%3),1,1,'#c9d3f5')}
+
+/* ===================== error reporting ===================== */
+const errors=[];
+function showErr(msg,detail){
+ const when=new Date();errors.push({when,msg,detail});
+ const bar=$('errbar');bar.hidden=false;
+ const d=document.createElement('div');d.className='err';
+ d.innerHTML=`<span class="t">${when.toTimeString().slice(0,8)}</span><span class="m">⚠ ${esc(msg)}${detail?`<br><span style="color:#ff8a8a">${esc(detail)}</span>`:''}</span><button title="copy">copy</button><button title="dismiss">✕</button>`;
+ const [copyBtn,closeBtn]=d.querySelectorAll('button');
+ copyBtn.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(`${when.toISOString()} ${msg}${detail?' — '+detail:''}`).catch(()=>{});copyBtn.textContent='copied'};
+ closeBtn.onclick=()=>{d.remove();if(!bar.children.length)bar.hidden=true};
+ bar.prepend(d);while(bar.children.length>5)bar.lastChild.remove();
+ const dg=$('diag');if(dg){dg.textContent=`🩺 ${errors.length} error${errors.length>1?'s':''}`;dg.classList.add('bad')}
+ console.error('[agent-deck]',msg,detail||'');
+}
+window.addEventListener('error',e=>showErr(e.message||'script error',`${(e.filename||'').split('/').pop()}:${e.lineno}:${e.colno}`));
+window.addEventListener('unhandledrejection',e=>showErr('unhandled promise rejection',String(e.reason&&e.reason.message||e.reason)));
+document.addEventListener('DOMContentLoaded',()=>{const dg=$('diag');if(dg)dg.onclick=()=>{const bar=$('errbar');if(!errors.length){dg.textContent='🩺 no errors so far';return}bar.hidden=!bar.hidden}});
+if(/err=test/.test(location.hash))setTimeout(()=>{throw new Error('test error from #err=test — the reporter works')},1500);
+
+/* ===================== frame loop ===================== */
+let last=performance.now();
+let renderErrs=0;
+function frame(now){
+ try{frameInner(now)}catch(err){renderErrs++;if(renderErrs<=3)showErr('render loop: '+err.message,(err.stack||'').split('\n')[1]||'');requestAnimationFrame(frame)}
+}
+function frameInner(now){
+ const dt=Math.min(0.25,(now-last)/1000);last=now;
+ const f=Math.floor(now/150);
+ step(dt);
+ ctx.setTransform(S,0,0,S,0,0);ctx.imageSmoothingEnabled=false;
+ R(0,0,Math.ceil(cv.width/S)+1,Math.ceil(cv.height/S)+1,'#070b18');
+ drawWalls(f);drawFloor();
+ const items=[];
+ items.push({d:9.95+0.42,fn:()=>drawRack(f)});items.push({d:10.5+7.5,fn:drawPlant});items.push({d:0.45+7.6,fn:()=>drawCoffee(f)});
+ for(const k in DESKS){const d=DESKS[k];const seatedAgent=agents.find(a=>a.desk===k&&a.phase==='seated');
+  items.push({d:d.i+d.w/2+d.j+0.5,fn:()=>drawDesk(d,seatedAgent,f)});items.push({d:d.i+d.w/2+d.j-0.9,fn:()=>drawChair(d)})}
+ for(const a of agents)if(a.phase!=='gone')items.push({d:a.pos.i+a.pos.j,fn:()=>drawChar(a,f)});
+ items.sort((x,y)=>x.d-y.d).forEach(x=>x.fn());
+ updateOverlays();
+ if(!hcard.hidden&&cardFor){const a=agents.find(x=>x.id===cardFor);if(a&&a.screen&&a.phase!=='gone')drawPortrait(a,f)}
+ requestAnimationFrame(frame);
+}
+
+/* ===================== movement + simulation ===================== */
+function seatOf(k){const d=DESKS[k];return {i:d.i+d.w/2,j:d.j-0.45}}
+function pathToDoor(k){const d=DESKS[k],s=seatOf(k),p=[];if(d.j<4){const side=d.i+d.w+0.45;p.push({i:side,j:s.j});p.push({i:side,j:4.5})}else p.push({i:s.i,j:4.5});p.push({i:0.7,j:4.5});p.push({i:0.15,j:4.5});return p}
+function pathFromDoor(k){const p=pathToDoor(k).reverse();p.push(seatOf(k));return p.slice(1)}
+function step(dt){
+ for(const a of agents){
+  if(a.phase!=='leaving'&&a.phase!=='arriving')continue;
+  const t=a.path[0];
+  if(!t){
+   if(a.phase==='leaving'){a.fade=(a.fade||0)+dt;if(a.fade>0.8){a.phase='gone';finishedTotal++;if(cardFor===a.id){cardFor=null;hcard.hidden=true}pushFeed(a.name,null,'left the session (SubagentStop)');agents=agents.filter(x=>x!==a);a.el.bub.remove();a.el.nm.remove();renderAll();setTimeout(()=>spawn(a.desk),5000)}}
+   else{a.phase='seated';a.state='working';a.since=Date.now();refreshBubble(a);pushFeed(a.name,a.tool,a.task);renderAll()}
+   continue;
+  }
+  const dx=t.i-a.pos.i,dy=t.j-a.pos.j,dist=Math.hypot(dx,dy),sp=1.7*dt;
+  a.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'SE':'NW'):(dy>0?'SW':'NE');
+  if(dist<=sp){a.pos={...t};a.path.shift()}else{a.pos.i+=dx/dist*sp;a.pos.j+=dy/dist*sp}
+  a.walkT+=dt;
+ }
+}
+function leave(a){a.state='leaving';a.phase='leaving';a.path=pathToDoor(a.desk);a.walkT=0;a.since=Date.now();refreshBubble(a);renderAll()}
+function spawn(desk){
+ if(agents.some(a=>a.desk===desk&&a.phase!=='gone'))return;
+ const n=NEWCOMERS[spawnIdx++%NEWCOMERS.length];
+ const a={...n,id:'n'+spawnIdx,state:'arriving',since:Date.now(),desk,pos:{i:0.15,j:4.5},path:pathFromDoor(desk),phase:'arriving',walkT:0,ctx:2,tokIn:1200,tokOut:0,tokThink:0,cacheRead:0,cacheWrite:900,tools:{},spawnedAt:Date.now()};
+ spawnedTotal++;agents.push(a);ensureOverlay(a);pushFeed('Lead','Agent','spawned '+n.name+' (SubagentStart)');renderAll();
+}
+function bump(a,tool){const before=a.ctx;bumpInner(a,tool);if(a.type==='lead'&&Math.round(before)!==Math.round(a.ctx))refreshBubble(a)}
+function bumpInner(a,tool){a.tools=a.tools||{};a.tools[tool]=(a.tools[tool]||0)+1;a.tokIn+=800+Math.floor(Math.random()*2500);a.tokOut+=60+Math.floor(Math.random()*300);a.tokThink+=Math.floor(Math.random()*120);a.cacheRead+=1500+Math.floor(Math.random()*4000);a.ctx=Math.min(99,a.ctx+(a.type==='lead'?4:0.4));if(a.type==='lead')a.messages+=2}
+function initAgents(){for(const a of agents){a.pos=seatOf(a.desk);a.phase='seated';a.path=[];a.walkT=0;ensureOverlay(a)}}
+/* scripted liveness */
+setTimeout(()=>{const a=agents.find(x=>x.id==='pl1');if(a)leave(a)},3500);
+setInterval(()=>{ // rotate tools for seated working subagents
+ const pool=agents.filter(a=>a.phase==='seated'&&a.state==='working'&&ROTATE[a.type]);if(!pool.length)return;
+ const a=pool[Math.floor(Math.random()*pool.length)];const opts=ROTATE[a.type].filter(o=>o.task!==a.task);const o=opts[Math.floor(Math.random()*opts.length)];
+ a.tool=o.tool;a.task=o.task;a.since=Date.now();bump(a,o.tool);refreshBubble(a);pushFeed(a.name,o.tool,o.task);
+},3600);
+setInterval(()=>{ // lead alternates thinking / writing
+ const a=agents.find(x=>x.id==='main');if(!a||a.state==='compacting')return;
+ if(a.state==='thinking'){a.state='working';a.tool='Write';a.task='mockups/d-isometric-session.html'}else{a.state='thinking';a.tool=null;a.task='Reviewing what the subagents found'}
+ a.since=Date.now();if(a.tool)bump(a,a.tool);refreshBubble(a);pushFeed(a.name,a.tool,a.task);
+},9000);
+setInterval(()=>{ // lead: warn at 85%, auto-compact at 96%
+ const a=agents.find(x=>x.id==='main');if(!a)return;
+ if(a.state!=='compacting'&&a.ctx>=CTX_COMPACT){
+  a.prevState=a.state;a.state='compacting';a.since=Date.now();refreshBubble(a);pushFeed('Lead',null,`context ${Math.round(a.ctx)}% · auto-compacting (PreCompact hook)`);
+  setTimeout(()=>{a.ctx=34;a.state=a.prevState||'thinking';a.since=Date.now();a.messages=12;refreshBubble(a);pushFeed('Lead',null,'context compacted · 34% · conversation summarised')},6000);
+ }else if(!a.warned&&a.ctx>=CTX_WARN){a.warned=true;refreshBubble(a);pushFeed('Lead',null,`context ${Math.round(a.ctx)}% · compaction expected soon`)}
+ else if(a.warned&&a.ctx<CTX_WARN){a.warned=false;refreshBubble(a)}
+},1000);
+setInterval(()=>{ // builder: approval granted, then a new approval request later
+ const a=agents.find(x=>x.id==='gp1');if(!a)return;
+ if(a.state==='waiting'){a.state='working';a.since=Date.now();refreshBubble(a);pushFeed('you',null,'approved Edit server.py')}
+ else{a.state='waiting';a.tool='Bash';a.task='pip install watchfiles';a.since=Date.now();refreshBubble(a);pushFeed(a.name,'Bash','pip install watchfiles · waiting for approval')}
+},21000);
+setInterval(()=>{ // a working subagent finishes and walks out
+ const pool=agents.filter(a=>a.phase==='seated'&&a.state==='working'&&a.type!=='lead');if(!pool.length)return;
+ const a=pool[Math.floor(Math.random()*pool.length)];a.state='done';a.tool=null;a.task='Report delivered to Lead';a.since=Date.now();refreshBubble(a);pushFeed(a.name,null,'finished · report delivered');
+ setTimeout(()=>{if(a.phase==='seated')leave(a)},4000);
+},30000);
+
+/* ===================== HTML overlays (crisp text over the canvas) ===================== */
+function bubbleText(a){
+ switch(a.state){
+  case 'working':return `${ICON[a.tool]||'⚙️'} <b>${esc(a.tool)}</b> <code>${esc(a.task)}</code>`;
+  case 'thinking':return `💭 ${esc(a.task)}…`;
+  case 'waiting':return `✋ <b>${esc(a.tool)}</b> <code>${esc(a.task)}</code> · approve?`;
+  case 'idle':return `☕ idle ${agoSpan(a.since)}`;
+  case 'done':return `✅ ${esc(a.task)}`;
+  case 'leaving':return `👋 done · leaving`;
+  case 'arriving':return `🚪 joining · ${esc(TYPE_LABEL[a.type]||a.type)}`;
+  case 'compacting':return `🗜 compacting context · ${Math.round(a.ctx)}%`;
+ }
+}
+function ensureOverlay(a){
+ if(a.el)return;
+ const bub=document.createElement('div');bub.className='bub';bub.onclick=e=>{e.stopPropagation();if(suppressClick)return;select(a.id)};
+ const nm=document.createElement('div');nm.className='nm';nm.onclick=e=>{e.stopPropagation();if(suppressClick)return;select(a.id)};
+ for(const el of [bub,nm]){el.addEventListener('mouseenter',()=>setHover(a.id));el.addEventListener('mouseleave',()=>setHover(null))}
+ $('ov').append(bub,nm);a.el={bub,nm};refreshBubble(a);
+}
+function refreshBubble(a){if(!a.el)return;a.el.bub.className='bub '+a.state+(selected===a.id?' sel':'');a.el.bub.innerHTML=bubbleText(a);a.el.nm.innerHTML=esc(a.name)+chipHTML(a)+(a.ctx>=CTX_WARN&&a.state!=='compacting'?`<i class="chip warn">CTX ${Math.round(a.ctx)}%</i>`:'');a.el.nm.className='nm'+(a.phase==='seated'?'':' walk');if(cardFor===a.id)renderCard(a)}
+function updateOverlays(){
+ for(const a of agents){
+  if(!a.el||a.phase==='gone')continue;
+  const s=a.screen||{x:0,y:0,hy:0};
+  const lift=a.state==='waiting'?15:(a.state==='idle'?13:5);
+  a.el.bub.style.left=(s.x*S)+'px';a.el.bub.style.top=((s.hy-lift)*S)+'px';
+  if(a.phase==='seated'){const d=DESKS[a.desk];const q=iso(d.i+d.w/2,d.j+1,5);a.el.nm.style.left=(q.x*S)+'px';a.el.nm.style.top=(q.y*S)+'px'}
+  else{a.el.nm.style.left=(s.x*S)+'px';a.el.nm.style.top=((s.y+6)*S)+'px'}
+  a.el.bub.style.opacity=(a.phase==='leaving'&&a.path.length===0)?.4:1;
+ }
+}
+function placeStaticOverlays(){
+ $('ov').querySelectorAll('.board,.sign').forEach(e=>e.remove());
+ // whiteboard: west wall, j 0.6..2.8, z 16..39
+ const tl=iso(0,3.3,39),w=(3.3-0.6)*TW/2,h=39-16;
+ const b=document.createElement('div');b.className='board';
+ b.style.left=(tl.x*S)+'px';b.style.top=(tl.y*S)+'px';b.style.width=(w*S)+'px';b.style.height=(h*S)+'px';b.style.fontSize=(8*S)+'px';
+ b.innerHTML=`<div class="t" style="font-size:${3.5*S}px">ASSIGNMENT</div>${esc(session.prompt.length>34?session.prompt.slice(0,34)+'…':session.prompt)}`;
+ $('ov').append(b);
+ // neon sign: north wall, i 0.4..3.6, z 32..42
+ const sl=iso(0.5,0,41);const sg=document.createElement('div');sg.className='sign';
+ sg.style.left=(sl.x*S)+'px';sg.style.top=(sl.y*S)+'px';sg.style.fontSize=(4.2*S)+'px';sg.textContent=session.name.toUpperCase();
+ $('ov').append(sg);
+}
+
+/* ===================== selection + hover card ===================== */
+let hoverId=null,cardHover=false,hideTimer=null,cardFor=null;
+const hcard=document.createElement('div');hcard.className='hcard';hcard.hidden=true;document.body.append(hcard);
+hcard.addEventListener('mouseenter',()=>{cardHover=true;clearTimeout(hideTimer)});
+hcard.addEventListener('mouseleave',()=>{cardHover=false;scheduleCard()});
+function setHover(id){if(hoverId===id)return;hoverId=id;scheduleCard()}
+function scheduleCard(){clearTimeout(hideTimer);hideTimer=setTimeout(updateCard,450)}
+function updateCard(){
+ const id=selected||hoverId||(cardHover?cardFor:null);
+ const a=id?agents.find(x=>x.id===id&&x.phase!=='gone'):null;
+ if(!a){hcard.hidden=true;cardFor=null;return}
+ const fresh=cardFor!==a.id||hcard.hidden;               // anchor once when it opens; do not follow the person afterwards
+ if(cardFor!==a.id){cardFor=a.id;renderCard(a)}
+ hcard.classList.toggle('pinned',selected===a.id);hcard.hidden=false;
+ if(fresh)positionCard(a);
+}
+function crewSummary(){const subs=agents.filter(x=>x.type!=='lead'&&x.phase!=='gone');const active=subs.filter(x=>['working','thinking','waiting','arriving'].includes(x.state)).length;const fin=finishedTotal+subs.filter(x=>x.state==='done'||x.state==='leaving').length;return `${spawnedTotal} spawned · ${active} active · ${fin} finished`}
+function renderCard(a){
+ const m=modelOf(a),lead=a.type==='lead';
+ const tools=Object.entries(a.tools||{}).sort((x,y)=>y[1]-x[1]);const calls=tools.reduce((n,[,c])=>n+c,0);
+ const cachePct=(a.tokIn+a.cacheRead)>0?Math.round(a.cacheRead/(a.tokIn+a.cacheRead)*100):0;
+ hcard.innerHTML=`
+ <div class="hc-head"><canvas class="hc-port" id="hc-port" width="84" height="120"></canvas>
+  <div class="hc-title"><div class="hc-name">${esc(a.name)}<i class="chip" style="background:${m.color}">${m.chip}</i></div>
+   <div class="hc-type">${TYPE_LABEL[a.type]||esc(a.type)}${a.desk?' · desk '+a.desk:''}</div>
+   <div class="hc-state"><span class="dot" style="background:${STC[a.state]}"></span>${STATE_LABEL[a.state]} · ${agoSpan(a.since)}</div>
+   <dl class="hc-kv"><dt>Model</dt><dd>${esc(a.model||'—')}<span class="muted"> · effort ${esc(a.effort||'—')}</span></dd><dt>Now</dt><dd class="bub-inline">${bubbleText(a)}</dd></dl></div></div>
+ ${a.state==='waiting'?`<div class="hc-wait">✋ WAITING ${agoSpan(a.since)} · ${esc(a.tool)} <code>${esc(a.task)}</code><span class="muted" style="font-size:12px;font-family:var(--ui)">approve in the session terminal</span></div>`:''}
+ <div class="hc-sec"><dl class="hc-kv">
+  <dt>${lead?'Prompt':'Brief'}</dt><dd>${lead?'“'+esc(session.prompt)+'”':esc(a.brief||'—')}</dd>
+  <dt>Tools</dt><dd>${tools.map(([t,c])=>`${esc(t)} ${c}`).join(' · ')||'—'}<span class="muted"> · ${calls} calls</span></dd>
+  <dt>Tokens</dt><dd>in ${fmtTok(a.tokIn)} · out ${fmtTok(a.tokOut)} · thinking ${fmtTok(a.tokThink)}</dd>
+  <dt>Cache</dt><dd>${fmtTok(a.cacheRead)} read (${cachePct}%) · ${fmtTok(a.cacheWrite)} written</dd>
+  <dt>Context</dt><dd><div class="hc-bar"><i class="${a.ctx>=CTX_WARN?'hot':''}" style="width:${a.ctx}%"></i></div><span class="muted" ${a.ctx>=CTX_WARN?'style="color:#ff7b7b"':''}>${Math.round(a.ctx)}% of ${fmtTok(a.ctxLimit||0)}${a.type==='lead'?' · auto-compact at ~'+CTX_COMPACT+'%':''}</span></dd></dl></div>
+ <div class="hc-sec"><dl class="hc-kv">
+  ${lead?`<dt>Turn</dt><dd>${session.turns} · ${a.messages} messages</dd><dt>Crew</dt><dd>${crewSummary()}</dd><dt>Session</dt><dd>pid ${session.pid} · started ${hhmm(session.startedAt)} · ${esc(session.cwd)}</dd>`
+       :`<dt>Spawned</dt><dd>${hhmm(a.spawnedAt||a.since)} by Lead${a.desk?' · desk '+a.desk:''}</dd>`}
+  <dt>Log</dt><dd><code>${esc(a.log||'')}</code></dd></dl></div>
+ <div class="hc-foot">${selected===a.id?'pinned · click the person again or press Esc to close':'hover to peek · click to pin'}</div>`;
+}
+function positionCard(a){
+ const s=a.screen;if(!s)return;const r=cv.getBoundingClientRect();
+ const cw=hcard.offsetWidth,ch=hcard.offsetHeight,vw=window.innerWidth,vh=window.innerHeight;
+ let left=r.left+(s.x+18)*S,top=r.top+(s.hy-8)*S;
+ if(left+cw>vw-8)left=r.left+(s.x-18)*S-cw;       // flip to the left of the person
+ if(left<8)left=8;
+ if(top+ch>vh-8)top=vh-ch-8;if(top<8)top=8;          // keep inside the window, not the frame
+ hcard.style.left=left+'px';hcard.style.top=top+'px';
+}
+function drawPortrait(a,f){
+ const pc=hcard.querySelector('#hc-port');if(!pc)return;
+ const prev=ctx;ctx=pc.getContext('2d');ctx.setTransform(3,0,0,3,0,0);ctx.imageSmoothingEnabled=false;
+ R(0,0,28,40,'#141b36');poly([[14,30],[27,36.5],[14,43],[1,36.5]],'#2f3a63');poly([[14,31],[25,36.5],[14,42],[3,36.5]],'#343f6b');
+ drawFigure(14,36,a,f,{seated:false,facing:'SW',walking:false,wf:0,outline:'#0a0f1e',fx:true,ctxWarn:a.ctx>=CTX_WARN});
+ ctx=prev;
+}
+function hitTest(e){
+ const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)/S,y=(e.clientY-r.top)/S;
+ for(const a of agents){if(!a.screen||a.phase==='gone')continue;const s=a.screen;if(x>=s.x-10&&x<=s.x+10&&y>=s.hy-4&&y<=s.y+2)return a}
+ return null;
+}
+function select(id){selected=(selected===id)?null:id;agents.forEach(refreshBubble);renderPanel();updateCard()}
+cv.addEventListener('mousemove',e=>{if(drag&&drag.moved)return;const a=hitTest(e);cv.style.cursor=a?'pointer':'grab';setHover(a?a.id:null)});
+/* drag to pan the view; a click that ends a drag does not select */
+let drag=null,suppressClick=false;
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+$('stage').addEventListener('mousedown',e=>{if(e.button!==0||e.target.closest('.viewctl')||e.target.closest('.hcard'))return;drag={x:e.clientX,y:e.clientY,cx:CAM.x,cy:CAM.y,moved:false}});
+window.addEventListener('mousemove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.moved){if(Math.hypot(dx,dy)<4)return;drag.moved=true;setHover(null);cv.style.cursor='grabbing'}
+ CAM.x=clamp(drag.cx+dx/S,-ART_W*1.6,ART_W*1.6);CAM.y=clamp(drag.cy+dy/S,-ART_H*1.6,ART_H*1.6);placeStaticOverlays();e.preventDefault()});
+window.addEventListener('mouseup',()=>{if(drag&&drag.moved){suppressClick=true;setTimeout(()=>{suppressClick=false},0)}drag=null;cv.style.cursor='grab'});
+$('recenter').addEventListener('click',()=>{CAM.x=0;CAM.y=0;S=S0;placeStaticOverlays();updateZoomChip()});
+/* zoom in fixed steps, about the cursor when it comes from the wheel or a pinch */
+const ZOOMS=[1,1.5,2,2.5,3,4,5];
+function setZoom(ns,mx,my){ns=Math.max(ZOOMS[0],Math.min(ZOOMS[ZOOMS.length-1],ns));if(ns===S)return;const r=cv.getBoundingClientRect();if(mx===undefined){mx=r.width/2;my=r.height/2}
+ CAM.x+=mx*(1/ns-1/S);CAM.y+=my*(1/ns-1/S);S=ns;placeStaticOverlays();updateZoomChip()}
+function zoomStep(dir,mx,my){let ni;if(dir>0){ni=ZOOMS.findIndex(z=>z>S+1e-9);if(ni<0)ni=ZOOMS.length-1}else{ni=ZOOMS.length-1;while(ni>0&&ZOOMS[ni]>=S-1e-9)ni--}setZoom(ZOOMS[ni],mx,my)}
+function updateZoomChip(){const c=$('zoomchip');if(c)c.textContent=(Math.round(S*10)/10)+'×';$('stage').style.setProperty('--zs',Math.max(0.7,Math.min(1.35,S/S0)).toFixed(2))}
+let wheelAcc=0;
+$('stage').addEventListener('wheel',e=>{e.preventDefault();wheelAcc+=e.deltaY;if(Math.abs(wheelAcc)<40)return;const r=cv.getBoundingClientRect();zoomStep(wheelAcc>0?-1:1,e.clientX-r.left,e.clientY-r.top);wheelAcc=0},{passive:false});
+$('zin').addEventListener('click',()=>zoomStep(1));$('zout').addEventListener('click',()=>zoomStep(-1));
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='+'||e.key==='=')zoomStep(1);else if(e.key==='-'||e.key==='_')zoomStep(-1)});
+cv.addEventListener('mouseleave',()=>setHover(null));
+cv.addEventListener('click',e=>{if(suppressClick)return;const hit=hitTest(e);if(hit)select(hit.id);else if(selected){selected=null;agents.forEach(refreshBubble);renderPanel();updateCard()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&selected){selected=null;agents.forEach(refreshBubble);renderPanel();updateCard()}});
+
+/* ===================== side panel ===================== */
+function evHTML(e){return `<div class="ev ${e.who==='you'?'you':''}"><span class="t">${hhmm(e.t)}</span><span>${e.who==='you'?'🧑‍💻':(ICON[e.tool]||'•')}</span><span><span class="w">${esc(e.who)}</span> ${e.tool?`<b>${esc(e.tool)}</b> <code>${esc(e.text)}</code>`:esc(e.text)}</span></div>`}
+function renderPanel(){
+ const s=session,crew=present(),a=selected?crew.find(x=>x.id===selected):null;
+ const waiting=crew.filter(x=>x.state==='waiting');
+ const lead=crew.find(x=>x.type==='lead');const ctx=lead?lead.ctx:s.ctx;const ctxHot=ctx>=CTX_WARN;
+ const ctxRow=lead&&(ctxHot||lead.state==='compacting')?`<div class="row"><span class="dot" style="background:#ff4d4d"></span><div class="grow"><b>Lead</b> · ${lead.state==='compacting'?'compacting context now':'context '+Math.round(ctx)+'% · auto-compact expected at ~'+CTX_COMPACT+'%'}<div class="muted">what is not in memory or files may be summarised away</div></div><button class="btn" onclick="select('main')">Show</button></div>`:'';
+ const feed=(a?s.feed.filter(e=>e.who===a.name||e.who==='you'):s.feed).slice(0,20);
+ $('panel').innerHTML=`
+ ${(waiting.length||ctxRow)?`<div class="card attn"><h3>✋ Needs your attention</h3>${ctxRow}${waiting.map(x=>`<div class="row"><span class="dot waiting"></span><div class="grow"><b>${esc(x.name)}</b> · ${esc(x.tool)} <code>${esc(x.task)}</code><div class="muted">${agoSpan(x.since)} ago</div></div><button class="btn" onclick="select('${x.id}')">Show</button></div>`).join('')}</div>`:''}
+ <div class="card"><h3><span class="dot ${s.status}"></span>${esc(s.name)}</h3>
+  <dl class="kv"><dt>Status</dt><dd>busy</dd><dt>Directory</dt><dd title="${esc(s.cwd)}">${esc(s.cwd)}</dd><dt>Branch</dt><dd>${esc(s.branch)}</dd><dt>PID</dt><dd>${s.pid}</dd><dt>Uptime</dt><dd>${agoSpan(s.startedAt)}</dd><dt>Model</dt><dd>${esc(s.model)}</dd><dt>Turns</dt><dd>${s.turns}</dd><dt>Tokens</dt><dd>${fmtTok(s.tokIn)} in · ${fmtTok(s.tokOut)} out</dd></dl>
+  <div class="bar" style="margin-top:10px"><i class="${ctxHot?'hot':''}" style="width:${ctx}%"></i></div><div class="muted small" style="margin-top:4px;${ctxHot?'color:#ff7b7b':''}">Context window ${Math.round(ctx)}% used${ctxHot?' · compaction soon':''}</div></div>
+ <div class="card"><h3>📌 Current assignment</h3><p class="prompt">“${esc(s.prompt)}”</p></div>
+ <div class="card"><h3>👥 In the room (${crew.length})</h3>${crew.map(x=>`<div class="row click ${selected===x.id?'on':''}" onclick="select('${x.id}')"><span class="dot" style="background:${STC[x.state]}"></span><div class="grow"><b>${esc(x.name)}</b>${chipHTML(x)} <span class="muted">· ${TYPE_LABEL[x.type]||esc(x.type)} · desk ${x.desk}</span><div class="muted">${STATE_LABEL[x.state]}${x.tool&&(x.state==='working'||x.state==='waiting')?' · '+esc(x.tool)+' <code>'+esc(x.task)+'</code>':''} · ${agoSpan(x.since)}</div></div></div>`).join('')}</div>
+ <div class="card"><h3>🕒 Activity ${a?`<span class="muted small">· ${esc(a.name)} only</span><button class="btn" style="margin-left:auto" onclick="select('${a.id}')">show all</button>`:''}</h3><div class="feed">${feed.map(evHTML).join('')}</div></div>
+ <div class="card"><h3>How to read the room</h3><ul class="src">
+  <li>Room = one session from <code>~/.claude/sessions/&lt;pid&gt;.json</code></li>
+  <li>Big desk = session lead; other desks = subagents from the <code>subagents/</code> folder</li>
+  <li>Bubble = latest <code>tool_use</code> in that agent's transcript</li>
+  <li>Door = <code>SubagentStart</code> / <code>SubagentStop</code> hooks</li>
+  <li>Raised hand = <code>PermissionRequest</code> hook</li>
+  <li>Whiteboard = last user prompt · rack = transcript log</li></ul></div>`;
+ $('st-agents').innerHTML=`<b>${crew.length}</b> agents in room`;$('tab-count').textContent=crew.length;
+ $('st-wait').innerHTML=(waiting.length?`<b>${waiting.length}</b> need${waiting.length>1?'':'s'} approval`:'')+(ctxHot?` <b style="color:#ff4d4d">▲ ctx ${Math.round(ctx)}%</b>`:'');
+}
+function renderAll(){renderPanel()}
+
+/* ===================== layout / scale ===================== */
+function isFull(){return document.fullscreenElement===$('stage')||$('stage').classList.contains('max')}
+function layout(){
+ let cw,ch;
+ if(isFull()){const w=$('stage').clientWidth,h=$('stage').clientHeight;S0=Math.max(1,Math.min(4,Math.floor(Math.min(w/ART_W,h/ART_H))));cw=w;ch=h}
+ else{const w=$('scene').clientWidth-40;S0=Math.max(1,Math.min(3,Math.floor(w/ART_W)));cw=ART_W*S0;ch=ART_H*S0}
+ S=S0;CAM.x=0;CAM.y=0;
+ cv.width=cw;cv.height=ch;cv.style.width=cw+'px';cv.style.height=ch+'px';
+ ORIGIN.x=ORIGIN0.x+(cw/S0-ART_W)/2;ORIGIN.y=ORIGIN0.y+(ch/S0-ART_H)/2;   // keep the deck centred in a bigger viewport
+ placeStaticOverlays();updateZoomChip();
+}
+function toggleFull(){
+ const st=$('stage');
+ if(document.fullscreenElement){document.exitFullscreen();return}
+ if(st.classList.contains('max')){st.classList.remove('max');onFullChange();return}
+ if(st.requestFullscreen){st.requestFullscreen().catch(()=>{st.classList.add('max');onFullChange()})}
+ else{st.classList.add('max');onFullChange()}
+}
+function onFullChange(){
+ const full=isFull();$('fs').textContent=full?'⛶ exit full screen':'⛶ full screen';
+ (full?$('stage'):document.body).append(hcard);   // the card must live inside the full-screen element to stay visible
+ setTimeout(layout,60);
+}
+$('fs').addEventListener('click',toggleFull);
+document.addEventListener('fullscreenchange',onFullChange);
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='f'||e.key==='F')toggleFull();else if(e.key==='Escape'&&$('stage').classList.contains('max')){$('stage').classList.remove('max');onFullChange()}});
+window.addEventListener('resize',()=>{layout();if(!hcard.hidden&&cardFor){const a=agents.find(x=>x.id===cardFor);if(a)positionCard(a)}});
+$('scene').addEventListener('scroll',()=>{if(!hcard.hidden&&cardFor){const a=agents.find(x=>x.id===cardFor);if(a)positionCard(a)}});
+setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString([],{hour12:false});document.querySelectorAll('[data-ago]').forEach(el=>el.textContent=ago(+el.dataset.ago))},1000);
+
+const ctxArg=(location.hash.match(/ctx=(\d+)/)||[])[1];if(ctxArg){const l=agents.find(a=>a.id==='main');if(l)l.ctx=Math.min(99,+ctxArg)}  // #ctx=90 to preview the alarm
+initAgents();layout();renderPanel();requestAnimationFrame(frame);
+const pinArg=(location.hash.match(/pin=([\w-]+)/)||[])[1];if(pinArg)setTimeout(()=>{if(agents.some(a=>a.id===pinArg))select(pinArg)},400);
+</script>
+</body>
+</html>

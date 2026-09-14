@@ -1,0 +1,36 @@
+{
+  "_comment": "Agent Deck configuration. Copy to agentdeck.json next to server.js, or to ~/.config/agentdeck/agentdeck.json. Every key is optional and these are the defaults; command-line flags override the file. Keys starting with an underscore are comments and are ignored.",
+
+  "_comment_data": "Where Claude Code keeps its files. null means the per-OS default: ~/.claude on macOS and Linux, %USERPROFILE%\\.claude on Windows, the WSL home when detected; Docker uses /data/claude. sessions_include and sessions_exclude are path globs matched against each session's cwd; an empty include list means every session. stale_after_s is how long a session may go without a file change before it is labelled stale when process liveness cannot be checked (Docker, WSL from Windows). poll_ms is the registry and transcript polling interval.",
+  "data_root": null,
+  "sessions_include": [],
+  "sessions_exclude": [],
+  "stale_after_s": 180,
+  "poll_ms": 500,
+
+  "_comment_server": "Network. host 127.0.0.1 keeps the dashboard on this machine; 0.0.0.0 exposes it to the LAN (Docker sets this itself inside the container). open_browser opens the page on start; --no-open is the flag equivalent.",
+  "port": 7777,
+  "host": "127.0.0.1",
+  "open_browser": true,
+
+  "_comment_view": "Default theme by file name under themes/ (spaceship or office ship with the app; add your own JSON there). The page can override it with #theme=<name> or the theme select.",
+  "theme": "spaceship",
+
+  "_comment_context": "Context alarms. context_warn_pct: percentage of the model's window at which the lead shows the '!' alarm and an attention row. context_compact_pct: percentage at which compaction is expected soon. context_limits maps an exact model id to its window in tokens; 'default' covers models not listed.",
+  "context_warn_pct": 85,
+  "context_compact_pct": 96,
+  "context_limits": {
+    "default": 200000,
+    "claude-fable-5-1": 1000000,
+    "claude-opus-5": 1000000,
+    "claude-sonnet-5": 1000000,
+    "claude-haiku-4-5-20251001": 200000
+  },
+
+  "_comment_hooks": "hooks_enabled accepts POSTs on /hook/<event> from the Claude Code hook snippet (node server.js --print-hooks). Off by default; nothing is installed into ~/.claude without --install-hooks. controls_enabled shows action buttons and enables /control; v1 is read-only so the route answers 'disabled' even when true.",
+  "hooks_enabled": false,
+  "controls_enabled": false,
+
+  "_comment_logging": "log_level: error, warn, info or debug. Logs go to stderr and to ~/.config/agentdeck/agentdeck.log (rotating, 5 MB). --verbose is the same as debug.",
+  "log_level": "info"
+}

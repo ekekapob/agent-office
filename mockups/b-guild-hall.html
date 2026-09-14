@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adventurers' Guild · Mockup B · Fantasy Guild Hall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stone:#1a1510;--stone2:#241d15;--stone3:#2f261c;--wood:#5a3b1e;--wood2:#3e2812;--wood3:#8a5a2b;
+  --parch:#efe0bd;--parch2:#e3d0a3;--ink:#3a2a14;--ink2:#6b5231;--gold:#e0b354;--ember:#ff8c3a;--magic:#7fd4ff;--blood:#5a1414;
+  --work:#6fd26f;--think:#7fb7ff;--wait:#ffb347;--idle:#a89f8f;--done:#c7a3ff;
+  --title:'Pirata One',Georgia,serif;--fell:'IM Fell English',Georgia,serif;--ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{color:#f4e6c8;font-family:var(--fell);font-size:14px;display:flex;flex-direction:column;min-height:100vh;
+ background:repeating-linear-gradient(0deg,#00000040 0 2px,transparent 2px 40px),repeating-linear-gradient(90deg,#00000040 0 2px,transparent 2px 84px),var(--stone2)}
+button{font:inherit}
+.muted{color:#b9a98a}.small{font-size:11.5px}.grow{flex:1;min-width:0}
+
+/* ---------- top beam ---------- */
+.topbar{display:flex;align-items:center;gap:16px;padding:8px 18px;background:linear-gradient(#6b4623,#4a2f16);border-bottom:4px solid #2a1808;box-shadow:0 4px 0 #0008;flex-wrap:wrap}
+.brand{font-family:var(--title);font-size:26px;color:var(--gold);text-shadow:2px 2px 0 #000;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand .sub{font-family:var(--fell);font-size:12px;color:#e8d7b3aa;text-shadow:none}
+.views{display:flex;gap:8px;flex-wrap:wrap}
+.views button{font-family:var(--fell);font-size:14px;padding:6px 12px;border:2px solid #2a1808;border-radius:3px;background:linear-gradient(#8a5a2b,#6a4220);color:#f4e6c8;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 0 #0006}
+.views button.on{background:linear-gradient(#e0b354,#c98f45);color:#2a1808;font-weight:700}
+.views small{font-size:12px;opacity:.85}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.dot.busy{background:var(--work)}.dot.waiting{background:var(--wait)}.dot.idle{background:var(--idle)}
+.stats{margin-left:auto;display:flex;gap:16px;font-size:14px;color:#e8d7b3;align-items:center}
+.stats b{color:var(--gold)}.stats .warn b{color:var(--wait)}
+.stats .clock{font-variant-numeric:tabular-nums;padding-left:12px;border-left:1px solid #0006}
+.ribbon{font-family:var(--title);font-size:11px;color:#2a1808;background:var(--wait);padding:3px 8px;border-radius:3px;letter-spacing:1px}
+
+main{display:grid;grid-template-columns:290px minmax(0,1fr) 350px;flex:1;min-height:0}
+@media (max-width:1180px){main{grid-template-columns:260px minmax(0,1fr)}.ledger{grid-column:1/-1;border-left:0;border-top:6px solid #241708}}
+@media (max-width:820px){main{grid-template-columns:1fr}.board{border-right:0}}
+
+/* ---------- quest board ---------- */
+.board{background:repeating-linear-gradient(90deg,#3a2712 0 26px,#432d15 26px 28px),#3a2712;border-right:6px solid #241708;padding:14px;overflow:auto}
+.board h2{font-family:var(--title);color:var(--gold);text-align:center;font-size:24px;margin:0 0 14px;text-shadow:1px 1px 0 #000;font-weight:400}
+.quest{position:relative;background:linear-gradient(var(--parch),var(--parch2));color:var(--ink);padding:18px 14px 14px;margin:0 6px 16px;box-shadow:3px 4px 0 #0007;transform:rotate(var(--r));cursor:pointer;border:1px solid #c9b58a;transition:transform .15s}
+.quest:nth-child(odd){--r:-1.2deg}.quest:nth-child(even){--r:1deg}
+.quest:hover{transform:rotate(0) scale(1.02)}
+.quest.sel{outline:3px solid var(--gold);transform:rotate(0)}
+.pin{position:absolute;top:-7px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff7b7b,#a11);box-shadow:0 2px 0 #0006}
+.qtitle{font-size:15px;line-height:1.3;font-style:italic;margin-bottom:8px;padding-right:56px}
+.qmeta{font-size:12.5px;color:var(--ink2);line-height:1.45;padding-right:56px;overflow:hidden;text-overflow:ellipsis}
+.qmeta b{color:var(--ink)}
+.seal{position:absolute;right:10px;bottom:10px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--title);font-size:10px;line-height:1.1;color:#fff;text-shadow:0 1px 0 #0008;transform:rotate(-12deg);box-shadow:inset 0 0 0 3px #fff3,0 2px 0 #0006;padding:4px}
+.seal.busy{background:radial-gradient(#7fdc7f,#2f8a3a)}.seal.waiting{background:radial-gradient(#ffd27f,#c76b12);animation:sealpulse 1.4s infinite}.seal.idle{background:radial-gradient(#bdb6a8,#6e665a)}
+@keyframes sealpulse{50%{transform:rotate(-12deg) scale(1.12)}}
+.qparty{margin-top:8px;font-size:12px;display:flex;gap:5px;align-items:center;color:var(--ink2)}
+.qparty i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* ---------- great hall ---------- */
+.hall{position:relative;overflow:auto;padding:22px 28px 30px}
+.hall h2{font-family:var(--title);color:var(--gold);font-size:26px;margin:0 0 18px;padding:0 44px;text-shadow:2px 2px 0 #000;font-weight:400;display:flex;align-items:center;gap:14px}
+.hall h2 span{font-family:var(--fell);font-size:13px;color:#b9a98a;text-shadow:none}
+.torch{position:absolute;top:14px;width:14px;height:44px;pointer-events:none}
+.torch::before{content:"";position:absolute;bottom:0;left:4px;width:6px;height:28px;background:linear-gradient(#7a532c,#3e2812)}
+.torch::after{content:"";position:absolute;top:0;left:-4px;width:22px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 75%,#fff3a0,#ff8c3a 45%,#ff3d00 78%,transparent 82%);animation:flick .18s infinite alternate;box-shadow:0 0 22px #ff8c3a99}
+@keyframes flick{from{transform:scaleY(1)}to{transform:scaleY(1.15) scaleX(.9) translateY(-2px)}}
+.camp{position:relative;margin:0 auto 26px;max-width:900px;cursor:pointer;transition:filter .3s,transform .15s}
+.camp:hover{transform:translateY(-2px)}
+.banner{display:flex;align-items:center;gap:12px;background:linear-gradient(#7a1e1e,#5a1414);border:3px solid #3a0d0d;border-bottom:0;color:#f4e6c8;padding:8px 14px;position:relative}
+.banner::before,.banner::after{content:"";position:absolute;top:-10px;width:12px;height:12px;background:#e0b354;border-radius:50%;box-shadow:0 2px 0 #0006}
+.banner::before{left:12px}.banner::after{right:12px}
+.banner .pname{font-family:var(--title);font-size:22px;color:var(--gold);text-shadow:1px 1px 0 #000;white-space:nowrap}
+.banner .realm{font-size:12.5px;color:#e8d7b3aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.tag{font-family:var(--title);font-size:13px;padding:3px 10px;border-radius:3px;color:#2a1808;white-space:nowrap}
+.tag.busy{background:var(--work)}.tag.waiting{background:var(--wait);animation:sealpulse2 1.4s infinite}.tag.idle{background:var(--idle)}
+@keyframes sealpulse2{50%{box-shadow:0 0 12px var(--wait)}}
+.mana{display:flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}
+.mana .bar{width:80px;height:8px;background:#1a1030;border:1px solid #6a4fb0;border-radius:2px;overflow:hidden}.mana .bar i{display:block;height:100%;background:linear-gradient(90deg,#4d7cff,#a06bff)}
+.tablearea{position:relative;border:3px solid #1a120b;padding:18px 20px 0;min-height:210px;display:flex;align-items:flex-end;overflow:hidden;
+ background:repeating-linear-gradient(0deg,#0004 0 2px,transparent 2px 28px),repeating-linear-gradient(90deg,#0004 0 2px,transparent 2px 56px),linear-gradient(#3a2f24,#2f261c)}
+.table{position:absolute;left:34px;right:34px;bottom:30px;height:40px;background:linear-gradient(#8a5a2b,#6a4220);border-top:4px solid #a8733a;border-radius:4px;box-shadow:0 4px 0 #0006}
+.table::before,.table::after{content:"";position:absolute;bottom:-30px;width:10px;height:30px;background:#5a3b1e}
+.table::before{left:14px}.table::after{right:14px}
+.party{position:relative;z-index:1;display:flex;flex-wrap:wrap;row-gap:18px;align-items:flex-end;justify-content:center;gap:16px;width:100%;padding-bottom:6px}
+
+/* ---------- adventurer ---------- */
+.adv{position:relative;display:flex;flex-direction:column;align-items:center;width:124px;flex:0 0 auto;--sc:var(--idle)}
+.adv.captain{width:136px}
+.adv.working{--sc:var(--work)}.adv.thinking{--sc:var(--think)}.adv.waiting{--sc:var(--wait)}.adv.idle{--sc:var(--idle)}.adv.done{--sc:var(--done)}
+.adv svg{display:block}
+.adv.sel svg{filter:drop-shadow(0 0 10px var(--gold))}
+.adv.done svg{opacity:.7}
+.scroll{position:relative;margin-bottom:12px;min-width:118px;max-width:172px;background:linear-gradient(var(--parch),var(--parch2));color:var(--ink);padding:6px 12px;font-size:12.5px;line-height:1.3;box-shadow:0 2px 0 #0007;border-top:3px solid var(--sc);border-bottom:3px solid var(--sc);text-align:left}
+.scroll::before,.scroll::after{content:"";position:absolute;top:-4px;bottom:-4px;width:8px;background:#c9b07f;border:1px solid #8a7248;border-radius:3px}
+.scroll::before{left:-6px}.scroll::after{right:-6px}
+.scroll code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#0002;padding:0 3px;border-radius:2px;word-break:break-all}
+.adv.waiting .scroll{animation:glow 1.4s infinite;background:linear-gradient(#fff1c9,#f5d98f)}
+@keyframes glow{50%{box-shadow:0 0 16px var(--wait),0 2px 0 #0007}}
+.adv.idle .scroll{opacity:.85}
+.adv .nm{font-size:13px;color:#f4e6c8;text-align:center;line-height:1.15;margin-top:5px;text-shadow:0 1px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.adv .nm small{display:block;color:var(--gold);font-size:11px;font-style:italic}
+.sparks{position:absolute;right:8px;top:calc(100% - 104px);width:30px;height:30px;pointer-events:none}
+.sparks i{position:absolute;width:5px;height:5px;background:var(--magic);box-shadow:0 0 6px var(--magic);animation:spark 1.2s infinite;opacity:0}
+.sparks i:nth-child(2){left:14px;top:8px;animation-delay:.4s;background:#fff}
+.sparks i:nth-child(3){left:6px;top:18px;animation-delay:.8s;background:#ffe27a}
+@keyframes spark{0%{opacity:0;transform:translateY(6px) scale(.6)}40%{opacity:1}100%{opacity:0;transform:translateY(-14px) scale(1.1)}}
+.rune{position:absolute;top:calc(100% - 118px);left:58%;font-family:var(--title);font-size:22px;color:var(--think);animation:zz 2s infinite;text-shadow:0 0 8px var(--think);pointer-events:none}
+.zz{position:absolute;top:calc(100% - 112px);left:58%;font-family:var(--title);font-size:16px;color:#e8d7b3;pointer-events:none;animation:zz 2.4s infinite 1.6s}
+.zz i,.zz b{position:absolute;left:8px;top:-8px;font-style:normal;font-weight:400;animation:zz 2.4s infinite}
+.zz b{left:16px;top:-16px;animation-delay:.8s}
+@keyframes zz{0%{opacity:0;transform:translateY(4px)}30%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.working .weapon{animation:bob 1s ease-in-out infinite;transform-origin:50px 60px}
+@keyframes bob{50%{transform:rotate(-8deg)}}
+.working .orb{animation:orb .9s infinite alternate}
+@keyframes orb{from{r:4}to{r:6.5}}
+.thinking .head{animation:nod 1.8s ease-in-out infinite;transform-origin:27px 44px}
+@keyframes nod{50%{transform:rotate(-6deg)}}
+.waiting .held{animation:wave .7s ease-in-out infinite alternate;transform-origin:43px 48px}
+@keyframes wave{from{transform:rotate(-6deg)}to{transform:rotate(8deg)}}
+.hall .camp.dim{filter:brightness(.45) saturate(.5)}
+
+/* ---------- party (single session) view ---------- */
+.crumbs{display:flex;align-items:center;gap:14px;margin-bottom:14px;font-size:15px;color:#b9a98a;padding:0 44px}
+.camp.big{cursor:default}.camp.big:hover{transform:none}
+.camp.big .tablearea{min-height:380px;padding:22px 18px 0}
+.camp.big .party{gap:10px;row-gap:18px}
+.camp.big .table{display:none}
+.camp.big .adv{width:138px}.camp.big .adv.captain{width:152px}
+.camp.big .adv svg{width:96px;height:132px}
+.camp.big .scroll{font-size:14px;max-width:200px;min-width:140px}
+.camp.big .scroll code{font-size:12.5px}
+.camp.big .adv .nm{font-size:15px}
+.camp.big .sparks{right:14px;top:calc(100% - 146px)}
+.camp.big .rune,.camp.big .zz{top:calc(100% - 168px);font-size:26px}
+.fire{position:relative;width:80px;height:110px;flex:0 0 auto;align-self:flex-end;margin:0 4px}
+.fire .log{position:absolute;bottom:8px;left:12px;width:66px;height:12px;background:linear-gradient(#7a532c,#3e2812);border-radius:6px;transform:rotate(-14deg)}
+.fire .log.l2{transform:rotate(14deg)}
+.fire .flame{position:absolute;bottom:18px;left:50%;width:34px;height:56px;margin-left:-17px;background:radial-gradient(circle at 50% 92%,#fff7b0,#ffb347 35%,#ff5a1f 65%,transparent 72%);border-radius:50% 50% 50% 50%/70% 70% 30% 30%;animation:flame .25s infinite alternate}
+.fire .flame.f2{width:20px;height:36px;margin-left:-6px;animation-delay:.12s;opacity:.9}
+.fire .flame.f3{width:16px;height:30px;margin-left:-16px;animation-delay:.2s;opacity:.8}
+@keyframes flame{from{transform:scaleY(1)}to{transform:scaleY(1.18) translateY(-3px) scaleX(.9)}}
+.fireglow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 88%,#ff8c3a40,transparent 42%);pointer-events:none;animation:glowp 1s infinite alternate}
+@keyframes glowp{to{opacity:.6}}
+.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;max-width:900px;margin:16px auto 0}
+.sheet{position:relative;background:linear-gradient(var(--parch),var(--parch2));color:var(--ink);padding:12px 14px;box-shadow:3px 3px 0 #0007;border:1px solid #c9b58a;border-left:6px solid var(--sc);cursor:pointer;--sc:var(--idle)}
+.sheet.working{--sc:var(--work)}.sheet.thinking{--sc:var(--think)}.sheet.waiting{--sc:var(--wait)}.sheet.idle{--sc:var(--idle)}.sheet.done{--sc:var(--done)}
+.sheet.sel{outline:3px solid var(--gold)}
+.sheet .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.sheet .h b{font-family:var(--title);font-size:18px;font-weight:400;color:var(--blood)}
+.sheet .h i{font-size:12px;color:var(--ink2)}
+.sheet .st{font-size:12px;margin-top:2px;color:var(--ink2)}
+.sheet .task{font-size:13px;margin-top:8px;line-height:1.35}
+.sheet code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#0002;padding:0 3px;border-radius:2px;word-break:break-all}
+.sheet .sub{font-size:11.5px;color:var(--ink2);margin-top:8px;display:flex;justify-content:space-between}
+
+/* ---------- ledger ---------- */
+.ledger{background:#2a1d10;border-left:6px solid #241708;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.page{background:linear-gradient(var(--parch),var(--parch2));color:var(--ink);padding:12px 14px;box-shadow:2px 3px 0 #0007;border:1px solid #c9b58a}
+.page h3{margin:0 0 8px;font-family:var(--title);font-size:20px;color:var(--blood);font-weight:400;display:flex;align-items:center;gap:8px}
+.page.attn{background:linear-gradient(#fff1c9,#f5d98f);border-color:#c76b12}
+.page .muted{color:var(--ink2)}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed #b8a67f;font-size:12.5px}
+.row:first-of-type{border-top:0}.row.click{cursor:pointer}.row.click:hover,.row.on{background:#0001;margin:0 -6px;padding-left:6px;padding-right:6px}
+.mini{width:74px;text-align:right;font-size:11px;color:var(--ink2)}
+.bar{height:8px;background:#1a1030;border:1px solid #6a4fb0;border-radius:2px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#4d7cff,#a06bff)}
+.bar.hp{background:#2a0a0a;border-color:#a33}.bar.hp i{background:linear-gradient(90deg,#d33,#ff7b7b)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 14px;font-size:12.5px;margin:0}
+.kv dt{color:var(--ink2)}.kv dd{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prompt{margin:0;font-size:14px;line-height:1.45;font-style:italic}
+.feed{display:flex;flex-direction:column;gap:8px;font-size:12.5px}
+.ev{display:grid;grid-template-columns:38px 20px minmax(0,1fr);gap:6px;align-items:start;line-height:1.35}
+.ev .t{color:var(--ink2);font-variant-numeric:tabular-nums;font-size:11.5px;padding-top:1px}
+.ev code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#0002;padding:0 3px;border-radius:2px;word-break:break-all}
+.ev.you{color:var(--blood)}
+.btn{font-family:var(--title);font-size:13px;background:var(--blood);color:#f4e6c8;border:2px solid #3a0d0d;padding:4px 10px;border-radius:3px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 0 #0006}
+.btn:hover{background:#7a1e1e}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px}
+.legend span{display:flex;align-items:center;gap:8px}
+.src{margin:0;padding-left:18px;font-size:12px;line-height:1.55;color:var(--ink2)}
+.src code{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink)}
+footer{padding:8px 18px;background:#2a1808;border-top:4px solid #4a2f16;font-size:12px;color:#b9a98a;display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+kbd{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#4a2f16;border:1px solid #6b4623;border-radius:3px;padding:0 5px;color:#f4e6c8}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">⚔ The Adventurers' Guild <span class="sub">Mockup B · fantasy guild hall</span></div>
+  <nav class="views" id="views"></nav>
+  <div class="stats"><span class="ribbon">SAMPLE DATA</span><span id="st-sessions"></span><span id="st-agents"></span><span class="warn" id="st-wait"></span><span class="clock" id="clock"></span></div>
+</header>
+<main>
+  <aside class="board" id="board"></aside>
+  <section class="hall" id="hall"></section>
+  <aside class="ledger" id="ledger"></aside>
+</main>
+<footer>
+  <span>Each party is one Claude Code session. The Captain is the session lead; Rangers, Sages and Warriors are the subagents it summoned.</span>
+  <span>Click a quest or a party to open its camp · <kbd>0</kbd> great hall · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> parties · <kbd>Esc</kbd> back</span>
+</footer>
+
+<script>
+/* ===================== sample data (same three sessions as mockup A) ===================== */
+const NOW=Date.now(),S=1000,M=60*S,H=60*M;
+const ICON={Grep:'🔮',Read:'📖',Bash:'⚡',Edit:'🔨',Write:'✒️',Agent:'🧙',Glob:'🗺️',WebFetch:'🐦'};
+const VERB={Grep:'scrying for',Read:'reading the tome',Bash:'casting the rune',Edit:'reforging',Write:'inscribing',Agent:'summoning',Glob:'surveying',WebFetch:'sending a raven to'};
+const PAST={Grep:'scried',Read:'read the tome',Bash:'cast the rune',Edit:'reforged',Write:'inscribed',Agent:'summoned',Glob:'surveyed',WebFetch:'sent a raven to'};
+const STATE_LABEL={working:'on the quest',thinking:'pondering',waiting:'awaits your seal',idle:'resting',done:'quest complete'};
+const STATUS_LABEL={busy:'Underway',waiting:'Awaits seal',idle:'Resting'};
+const CLASS={lead:{cls:'captain',label:'Captain · session lead',color:'#3b4fd8',pants:'#2a2f5a'},Explore:{cls:'ranger',label:'Ranger · Explore',color:'#2f7a3a',pants:'#3a2a1a'},Plan:{cls:'sage',label:'Sage · Plan',color:'#6a3fb8',pants:'#3a2a5a'},'general-purpose':{cls:'warrior',label:'Warrior · general',color:'#8a4a2a',pants:'#3a2a1a'},'code-review':{cls:'paladin',label:'Paladin · review',color:'#c9a24a',pants:'#5a4a2a'}};
+
+const SESSIONS=[
+ {id:'ws',num:1,pid:87328,name:'agent workspace',cwd:'~/Documents/GitHub/agent-workspace',branch:'main',status:'busy',startedAt:NOW-11*M,ctx:23,turns:6,tokIn:148200,tokOut:9400,model:'fable-5.1',
+  prompt:'Draft HTML mockups for a 2D gamified dashboard of sessions and agents',
+  agents:[
+   {id:'main',type:'lead',name:'Lead',state:'thinking',tool:null,task:'what the scouts brought back',since:NOW-40*S},
+   {id:'ex1',type:'Explore',name:'Explore · hooks',state:'working',tool:'Grep',task:'"SubagentStart" in ~/.claude',since:NOW-3*M},
+   {id:'ex2',type:'Explore',name:'Explore · registry',state:'working',tool:'Read',task:'sessions/87328.json',since:NOW-2*M},
+   {id:'gp1',type:'general-purpose',name:'Builder',state:'working',tool:'Bash',task:'python3 server.py --check',since:NOW-5*M},
+   {id:'pl1',type:'Plan',name:'Architect',state:'done',tool:null,task:'plan delivered · 3 options',since:NOW-7*M},
+  ],
+  feed:[
+   {t:NOW-11*M,who:'you',text:'Draft HTML mockups for a 2D gamified dashboard of sessions and agents'},
+   {t:NOW-10*M-20*S,who:'Lead',tool:'Bash',text:'ls -la ~/.claude/sessions'},
+   {t:NOW-9*M,who:'Lead',tool:'Agent',text:'Explore · hooks'},
+   {t:NOW-9*M+5*S,who:'Lead',tool:'Agent',text:'Explore · registry'},
+   {t:NOW-8*M,who:'Lead',tool:'Agent',text:'Architect (Plan)'},
+   {t:NOW-7*M,who:'Architect',tool:'Write',text:'plan.md · 3 options'},
+   {t:NOW-6*M,who:'Lead',tool:'Agent',text:'Builder'},
+   {t:NOW-5*M,who:'Builder',tool:'Write',text:'server.py'},
+   {t:NOW-3*M,who:'Explore · hooks',tool:'Grep',text:'"SubagentStart" in ~/.claude'},
+   {t:NOW-2*M,who:'Explore · registry',tool:'Read',text:'sessions/87328.json'},
+   {t:NOW-40*S,who:'Lead',text:'ponders the omens'},
+  ]},
+ {id:'jk',num:2,pid:30536,name:'jenkins-c0',cwd:'~/Documents/GitHub/jenkins',branch:'main',status:'waiting',startedAt:NOW-6*H-35*M,ctx:61,turns:42,tokIn:1240000,tokOut:88000,model:'fable-5.1',
+  prompt:'Lock down Jenkins authorization and verify the API token wiring',
+  agents:[
+   {id:'main',type:'lead',name:'Lead',state:'waiting',tool:'Edit',task:'jenkins/casc.yaml',since:NOW-90*S},
+   {id:'gp1',type:'general-purpose',name:'Runner',state:'working',tool:'Bash',task:'docker exec jenkins sh -c "grep authorizationStrategy …"',since:NOW-4*M},
+  ],
+  feed:[
+   {t:NOW-6*H-35*M,who:'you',text:'Lock down Jenkins authorization and verify the API token wiring'},
+   {t:NOW-20*M,who:'Lead',tool:'Read',text:'jenkins/casc.yaml'},
+   {t:NOW-12*M,who:'Lead',tool:'Agent',text:'Runner'},
+   {t:NOW-9*M,who:'Runner',tool:'Bash',text:'docker exec jenkins cat /var/jenkins_home/config.xml'},
+   {t:NOW-4*M,who:'Runner',tool:'Bash',text:'docker exec jenkins sh -c "grep authorizationStrategy …"'},
+   {t:NOW-90*S,who:'Lead',tool:'Edit',text:'jenkins/casc.yaml · awaits the seal'},
+  ]},
+ {id:'hn',num:3,pid:88313,name:'harness',cwd:'~',branch:'—',status:'idle',startedAt:NOW-27*M,ctx:8,turns:3,tokIn:41000,tokOut:2100,model:'fable-5.1',
+  prompt:'Review john_guard.py rules',
+  agents:[{id:'main',type:'lead',name:'Lead',state:'idle',tool:null,task:'awaiting the next decree',since:NOW-12*M}],
+  feed:[
+   {t:NOW-27*M,who:'you',text:'Review john_guard.py rules'},
+   {t:NOW-25*M,who:'Lead',tool:'Read',text:'~/.claude/harness/john-harness/john_guard.py'},
+   {t:NOW-14*M,who:'Lead',tool:'Grep',text:'"deny" in john_guard.py'},
+   {t:NOW-12*M,who:'Lead',text:'reported 4 findings to the Guildmaster'},
+  ]},
+];
+SESSIONS.forEach(s=>s.feed.sort((a,b)=>b.t-a.t));
+if(!['all',...SESSIONS.map(s=>s.id)].includes((location.hash||'#all').slice(1)))history.replaceState(null,'','#all');
+const ROTATE={
+ Explore:[{tool:'Grep',task:'"SubagentStop" in ~/.claude'},{tool:'Read',task:'subagents/agent-a1f3.jsonl'},{tool:'Glob',task:'~/.claude/sessions/*.json'},{tool:'Grep',task:'"messagingSocketPath"'},{tool:'Read',task:'sessions/30536.json'}],
+ 'general-purpose':[{tool:'Bash',task:'python3 server.py --check'},{tool:'Edit',task:'server.py · tail loop'},{tool:'Bash',task:'curl -s localhost:7777/api/sessions'},{tool:'Write',task:'static/index.html'},{tool:'Bash',task:'docker exec jenkins sh -c "grep authorizationStrategy …"'}],
+};
+
+/* ===================== helpers ===================== */
+let view=(location.hash||'#all').slice(1),selAgent=null;
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function byId(id){return SESSIONS.find(s=>s.id===id)}
+function ago(t){let d=Math.max(0,Date.now()-t)/1000;if(d<60)return Math.floor(d)+'s';if(d<3600)return Math.floor(d/60)+'m';return Math.floor(d/3600)+'h '+Math.floor(d%3600/60)+'m'}
+function agoSpan(t){return `<span data-ago="${t}">${ago(t)}</span>`}
+function hhmm(t){return new Date(t).toTimeString().slice(0,5)}
+function fmtTok(n){return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?Math.round(n/1e3)+'k':n}
+function agentCount(){return SESSIONS.reduce((n,s)=>n+s.agents.length,0)}
+function waitingList(){const w=[];SESSIONS.forEach(s=>s.agents.forEach(a=>{if(a.state==='waiting')w.push([s,a])}));return w}
+function stColor(st){return {working:'var(--work)',thinking:'var(--think)',waiting:'var(--wait)',idle:'var(--idle)',done:'var(--done)'}[st]}
+
+/* ===================== adventurer sprite ===================== */
+function sprite(a){
+ const c=CLASS[a.type]||CLASS.lead,skin='#f2c9a0',hair='#3a2a1a';
+ const eyes=a.state==='idle'?`<rect x="22" y="33" width="3" height="1" fill="#111"/><rect x="29" y="33" width="3" height="1" fill="#111"/>`:`<rect x="23" y="32" width="2" height="2" fill="#111"/><rect x="30" y="32" width="2" height="2" fill="#111"/>`;
+ let head='',weapon='';
+ switch(c.cls){
+  case 'captain':head=`<rect x="16" y="20" width="22" height="10" fill="#b8c0d0"/><rect x="16" y="26" width="22" height="2" fill="#7f8a9c"/><rect x="26" y="8" width="4" height="12" fill="#d33"/><rect x="30" y="10" width="3" height="6" fill="#d33"/>`;
+   weapon=`<g class="weapon"><rect x="48" y="26" width="3" height="32" fill="#dfe6ee"/><rect x="43" y="56" width="13" height="3" fill="#c9a24a"/><rect x="48" y="59" width="3" height="7" fill="#5a3b1e"/></g>`;break;
+  case 'ranger':head=`<rect x="15" y="18" width="24" height="12" fill="#2f7a3a"/><rect x="13" y="26" width="4" height="10" fill="#2f7a3a"/><rect x="37" y="26" width="4" height="10" fill="#2f7a3a"/>`;
+   weapon=`<g class="weapon"><path d="M50 26 Q62 52 50 78" stroke="#7a4b1e" stroke-width="3" fill="none"/><line x1="50" y1="26" x2="50" y2="78" stroke="#e8e0c8" stroke-width="1"/></g>`;break;
+  case 'sage':head=`<polygon points="27,2 12,24 42,24" fill="#6a3fb8"/><rect x="9" y="23" width="36" height="4" fill="#4d2a8f"/><rect x="26" y="12" width="3" height="3" fill="#ffe27a"/>`;
+   weapon=`<g class="weapon"><rect x="49" y="24" width="3" height="46" fill="#7a4b1e"/><circle class="orb" cx="50.5" cy="20" r="5" fill="#7fd4ff"/></g>`;break;
+  case 'warrior':head=`<rect x="16" y="20" width="22" height="8" fill="#8a8f99"/><rect x="12" y="16" width="4" height="10" fill="#e8e0c8"/><rect x="38" y="16" width="4" height="10" fill="#e8e0c8"/>`;
+   weapon=`<g class="weapon"><rect x="49" y="26" width="3" height="42" fill="#7a4b1e"/><polygon points="52,26 62,30 62,42 52,40" fill="#b8c0d0"/></g>`;break;
+  case 'paladin':head=`<rect x="16" y="18" width="22" height="12" fill="#e0b354"/><rect x="26" y="20" width="2" height="8" fill="#fff5cc"/>`;
+   weapon=`<g class="weapon"><rect x="49" y="30" width="3" height="40" fill="#7a4b1e"/><rect x="44" y="24" width="13" height="10" fill="#b8c0d0"/></g>`;break;
+ }
+ const waiting=a.state==='waiting',idle=a.state==='idle',done=a.state==='done';
+ const rightArm=waiting?`<g class="held"><rect x="40" y="26" width="6" height="22" fill="${c.color}"/><rect x="40" y="24" width="6" height="4" fill="${skin}"/><rect x="38" y="12" width="20" height="13" fill="#efe0bd" stroke="#8a7248"/><circle cx="48" cy="18.5" r="3.2" fill="#c0392b"/></g>`
+  :`<rect x="40" y="46" width="6" height="18" fill="${c.color}"/><rect x="40" y="62" width="6" height="4" fill="${skin}"/>`;
+ const mug=idle?`<rect x="40" y="52" width="8" height="9" fill="#c9a24a"/><rect x="48" y="54" width="2" height="5" fill="#c9a24a"/><rect x="41" y="50" width="6" height="2" fill="#fff"/>`:'';
+ const flag=done?`<rect x="48" y="14" width="2" height="44" fill="#7a4b1e"/><polygon points="50,14 62,18 50,22" fill="#c7a3ff"/>`:'';
+ return `<svg viewBox="0 0 64 88" width="64" height="88" shape-rendering="crispEdges" aria-hidden="true">
+  <rect x="18" y="78" width="8" height="8" fill="#3a2a1a"/><rect x="28" y="78" width="8" height="8" fill="#3a2a1a"/>
+  <rect x="18" y="64" width="18" height="14" fill="${c.pants}"/>
+  <rect x="14" y="44" width="26" height="22" fill="${c.color}"/>
+  <rect x="14" y="58" width="26" height="3" fill="#2a1a0a"/><rect x="25" y="57" width="4" height="5" fill="#e0b354"/>
+  <rect x="8" y="46" width="6" height="18" fill="${c.color}"/><rect x="8" y="62" width="6" height="4" fill="${skin}"/>
+  ${(waiting||idle||done)?'':weapon}${flag}${rightArm}${mug}
+  <g class="head"><rect x="18" y="26" width="18" height="18" fill="${skin}"/><rect x="18" y="24" width="18" height="5" fill="${hair}"/>${eyes}${head}</g>
+ </svg>`;
+}
+function scrollText(a){
+ switch(a.state){
+  case 'working':return `✦ ${VERB[a.tool]||'labouring on'} <code>${esc(a.task)}</code>`;
+  case 'thinking':return `☾ pondering <i>${esc(a.task)}</i>…`;
+  case 'waiting':return `📜 <b>Awaits your seal</b><br>${VERB[a.tool]||esc(a.tool)} <code>${esc(a.task)}</code> · ${agoSpan(a.since)}`;
+  case 'idle':return `🍺 resting at the tavern · ${agoSpan(a.since)}`;
+  case 'done':return `🏁 <i>${esc(a.task)}</i>`;
+ }
+}
+function advHTML(s,a){
+ const c=CLASS[a.type]||CLASS.lead,key=s.id+':'+a.id;
+ const fx=a.state==='working'?'<div class="sparks"><i></i><i></i><i></i></div>':a.state==='thinking'?'<div class="rune">?</div>':a.state==='idle'?'<span class="zz">z<i>z</i><b>z</b></span>':'';
+ return `<div class="adv ${a.state} ${c.cls} ${selAgent===key?'sel':''}" data-a="${key}" title="${esc(a.name)} · ${c.label}" onclick="event.stopPropagation();selectAgent('${s.id}','${a.id}')">
+  <div class="scroll">${scrollText(a)}</div>${fx}${sprite(a)}
+  <div class="nm">${esc(a.name)}<small>${c.label.split(' · ')[0]}</small></div></div>`;
+}
+function campHTML(s,big){
+ const advs=s.agents.map(a=>advHTML(s,a));
+ let party;
+ if(big&&advs.length>1){const mid=Math.ceil(advs.length/2);party=advs.slice(0,mid).join('')+'<div class="fire"><div class="fireglow"></div><div class="log"></div><div class="log l2"></div><div class="flame"></div><div class="flame f2"></div><div class="flame f3"></div></div>'+advs.slice(mid).join('')}
+ else if(big){party='<div class="fire"><div class="fireglow"></div><div class="log"></div><div class="log l2"></div><div class="flame"></div><div class="flame f2"></div><div class="flame f3"></div></div>'+advs.join('')}
+ else party=advs.join('');
+ return `<div class="camp ${s.status} ${big?'big':''}" data-sid="${s.id}">
+  <div class="banner"><span class="pname">🛡 ${esc(s.name)}</span><span class="realm">realm ${esc(s.cwd)} · ${esc(s.branch)} · pid ${s.pid}</span><span class="tag ${s.status}">${STATUS_LABEL[s.status]}</span><span class="mana">Mana <span class="bar"><i style="width:${s.ctx}%"></i></span> ${s.ctx}%</span></div>
+  <div class="tablearea"><div class="table"></div><div class="party">${party}</div></div></div>`;
+}
+function sheetHTML(s,a){
+ const c=CLASS[a.type]||CLASS.lead,key=s.id+':'+a.id;
+ return `<div class="sheet ${a.state} ${selAgent===key?'sel':''}" data-a="${key}" onclick="selectAgent('${s.id}','${a.id}')">
+  <div class="h"><b>${esc(a.name)}</b><i>${c.label}</i></div>
+  <div class="st">● ${STATE_LABEL[a.state]}</div>
+  <div class="task">${scrollText(a)}</div>
+  <div class="sub"><span>since ${hhmm(a.since)}</span><span>${a.tool?ICON[a.tool]+' '+esc(a.tool):''}</span></div></div>`;
+}
+
+/* ===================== render ===================== */
+function renderBoard(){
+ $('board').innerHTML=`<h2>Quest Board</h2>`+SESSIONS.map(s=>`<div class="quest ${view===s.id?'sel':''}" onclick="setView('${s.id}')"><div class="pin"></div>
+  <div class="qtitle">“${esc(s.prompt)}”</div>
+  <div class="qmeta">Party <b>${esc(s.name)}</b><br>Realm ${esc(s.cwd)}<br>Set out ${agoSpan(s.startedAt)} ago · ${s.turns} turns</div>
+  <div class="qparty">${s.agents.map(a=>`<i style="background:${stColor(a.state)}" title="${esc(a.name)}"></i>`).join('')} ${s.agents.length} adventurer${s.agents.length>1?'s':''}</div>
+  <div class="seal ${s.status}">${STATUS_LABEL[s.status]}</div></div>`).join('');
+}
+function renderHall(){
+ const h=$('hall');
+ const torches='<div class="torch" style="left:3%"></div><div class="torch" style="left:34%"></div><div class="torch" style="right:34%"></div><div class="torch" style="right:3%"></div>';
+ if(view==='all'){
+  h.innerHTML=torches+`<h2>The Great Hall <span>${SESSIONS.length} parties gathered · ${agentCount()} adventurers · ${waitingList().length} awaiting your seal</span></h2>`+SESSIONS.map(s=>campHTML(s,false)).join('');
+  h.querySelectorAll('.camp').forEach(c=>c.addEventListener('click',()=>setView(c.dataset.sid)));
+ }else{
+  const s=byId(view);
+  h.innerHTML=torches+`<div class="crumbs"><button class="btn" onclick="setView('all')">← Back to the hall</button><span>Camp of <b style="color:var(--gold)">${esc(s.name)}</b></span><span class="small" style="margin-left:auto">click an adventurer to read only their deeds</span></div>`+campHTML(s,true)+`<div class="sheets">${s.agents.map(a=>sheetHTML(s,a)).join('')}</div>`;
+ }
+}
+function chronLine(e){
+ const t=`<span class="t">${hhmm(e.t)}</span>`;
+ if(e.who==='you')return `<div class="ev you">${t}<span>👑</span><span><b>The Guildmaster</b> decreed: <i>“${esc(e.text)}”</i></span></div>`;
+ if(e.tool)return `<div class="ev">${t}<span>${ICON[e.tool]||'•'}</span><span><b>${esc(e.who)}</b> ${PAST[e.tool]||esc(e.tool)} <code>${esc(e.text)}</code></span></div>`;
+ return `<div class="ev">${t}<span>•</span><span><b>${esc(e.who)}</b> ${esc(e.text)}</span></div>`;
+}
+function renderLedger(){
+ const L=$('ledger');
+ if(view==='all'){
+  const w=waitingList();
+  L.innerHTML=`
+  <div class="page attn"><h3>📜 Seals awaited</h3>${w.length?w.map(([s,a])=>`<div class="row"><span class="dot waiting"></span><div class="grow"><b>${esc(s.name)}</b> · ${esc(a.name)}<div class="muted">${VERB[a.tool]||esc(a.tool)} <code>${esc(a.task)}</code> · ${agoSpan(a.since)} ago</div></div><button class="btn" onclick="setView('${s.id}')">To camp</button></div>`).join(''):'<div class="muted">No scroll awaits your seal.</div>'}</div>
+  <div class="page"><h3>🛡 Parties in the hall</h3>${SESSIONS.map(s=>`<div class="row click" onclick="setView('${s.id}')"><span class="dot ${s.status}"></span><div class="grow"><b>${esc(s.name)}</b><div class="muted">${s.agents.length} adventurer${s.agents.length>1?'s':''} · ${s.agents.filter(a=>a.state==='working'||a.state==='thinking').length} active · ${agoSpan(s.startedAt)} on the road</div></div><div class="mini"><div class="bar"><i style="width:${s.ctx}%"></i></div>mana ${s.ctx}%</div></div>`).join('')}</div>
+  <div class="page"><h3>Bestiary</h3><div class="legend">
+   <span>🛡 Captain = session lead</span><span>🏹 Ranger = Explore</span><span>🔮 Sage = Plan</span><span>⚔ Warrior = general-purpose</span><span>✝ Paladin = code-review</span><span>✦ sparks = running a tool</span>
+   <span><i class="dot" style="background:var(--wait)"></i>raised scroll = needs approval</span><span><i class="dot" style="background:var(--idle)"></i>tankard = idle</span></div></div>
+  <div class="page"><h3>Whence the omens</h3><ul class="src">
+   <li>Parties: <code>~/.claude/sessions/&lt;pid&gt;.json</code></li><li>Adventurers: transcript <code>.jsonl</code> + <code>subagents/</code></li>
+   <li>Scrolls: latest <code>tool_use</code> in each transcript</li><li>Seals: <code>PermissionRequest</code> hook</li><li>Mana: context window used</li></ul></div>`;
+ }else{
+  const s=byId(view),a=selAgent?s.agents.find(x=>s.id+':'+x.id===selAgent):null;
+  const feed=(a?s.feed.filter(e=>e.who===a.name||e.who==='you'):s.feed).slice(0,18);
+  L.innerHTML=`
+  <div class="page"><h3><span class="dot ${s.status}"></span>${esc(s.name)}</h3>
+   <dl class="kv"><dt>Standing</dt><dd>${STATUS_LABEL[s.status]}</dd><dt>Realm</dt><dd title="${esc(s.cwd)}">${esc(s.cwd)}</dd><dt>Banner</dt><dd>${esc(s.branch)}</dd><dt>PID</dt><dd>${s.pid}</dd><dt>On the road</dt><dd>${agoSpan(s.startedAt)}</dd><dt>Patron</dt><dd>${esc(s.model)}</dd><dt>XP (turns)</dt><dd>${s.turns}</dd><dt>Gold (tokens)</dt><dd>${fmtTok(s.tokIn)} in · ${fmtTok(s.tokOut)} out</dd></dl>
+   <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11.5px">
+    <div>Mana used <div class="bar" style="margin-top:3px"><i style="width:${s.ctx}%"></i></div>${s.ctx}% of context</div>
+    <div>Vigor left <div class="bar hp" style="margin-top:3px"><i style="width:${100-s.ctx}%"></i></div>${100-s.ctx}% remaining</div></div></div>
+  <div class="page"><h3>📜 The quest</h3><p class="prompt">“${esc(s.prompt)}”</p></div>
+  <div class="page"><h3>🛡 The party (${s.agents.length})</h3>${s.agents.map(x=>{const c=CLASS[x.type]||CLASS.lead;return `<div class="row click ${selAgent===s.id+':'+x.id?'on':''}" onclick="selectAgent('${s.id}','${x.id}')"><span class="dot" style="background:${stColor(x.state)}"></span><div class="grow"><b>${esc(x.name)}</b> <span class="muted">· ${c.label.split(' · ')[0]}</span><div class="muted">${STATE_LABEL[x.state]}${x.tool?' · '+esc(x.tool):''} · ${agoSpan(x.since)}</div></div></div>`}).join('')}</div>
+  <div class="page"><h3>📖 Chronicle ${a?`<span class="muted small">· ${esc(a.name)}</span><button class="btn" style="margin-left:auto" onclick="selectAgent(null)">all deeds</button>`:''}</h3><div class="feed">${feed.map(chronLine).join('')}</div></div>`;
+ }
+}
+function renderViews(){
+ $('views').innerHTML=`<button data-v="all" class="${view==='all'?'on':''}">🏰 Great hall</button>`+SESSIONS.map(s=>`<button data-v="${s.id}" class="${view===s.id?'on':''}"><span class="dot ${s.status}"></span>${esc(s.name)}<small>${s.agents.length}</small></button>`).join('');
+ $('views').querySelectorAll('button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+}
+function renderStats(){
+ $('st-sessions').innerHTML=`<b>${SESSIONS.length}</b> parties`;$('st-agents').innerHTML=`<b>${agentCount()}</b> adventurers`;
+ const w=waitingList().length;$('st-wait').innerHTML=w?`<b>${w}</b> await${w>1?'':'s'} your seal`:'';
+}
+function render(){renderViews();renderStats();renderBoard();renderHall();renderLedger()}
+function setView(v){view=v;selAgent=null;history.replaceState(null,'','#'+v);render()}
+function selectAgent(sid,aid){
+ const key=sid?sid+':'+aid:null;selAgent=(selAgent===key)?null:key;
+ if(view==='all'&&sid){view=sid;render();return}
+ document.querySelectorAll('.adv,.sheet').forEach(el=>el.classList.toggle('sel',el.dataset.a===selAgent));
+ renderLedger();
+}
+function refreshAgent(s,a){
+ document.querySelectorAll(`.adv[data-a="${s.id}:${a.id}"]`).forEach(el=>el.outerHTML=advHTML(s,a));
+ document.querySelectorAll(`.sheet[data-a="${s.id}:${a.id}"]`).forEach(el=>el.outerHTML=sheetHTML(s,a));
+ if(view===s.id)renderLedger();
+}
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'||e.key==='0')return setView('all');
+ const s=SESSIONS.find(x=>String(x.num)===e.key);if(s)setView(s.id);
+});
+
+/* ===================== fake liveness ===================== */
+setInterval(()=>{
+ $('clock').textContent=new Date().toLocaleTimeString([],{hour12:false});
+ document.querySelectorAll('[data-ago]').forEach(el=>el.textContent=ago(+el.dataset.ago));
+},1000);
+setInterval(()=>{
+ const pool=[];SESSIONS.forEach(s=>s.agents.forEach(a=>{if(a.state==='working'&&ROTATE[a.type])pool.push([s,a])}));
+ if(!pool.length)return;
+ const [s,a]=pool[Math.floor(Math.random()*pool.length)];
+ const opts=ROTATE[a.type].filter(o=>o.task!==a.task);const o=opts[Math.floor(Math.random()*opts.length)];
+ a.tool=o.tool;a.task=o.task;a.since=Date.now();
+ s.feed.unshift({t:Date.now(),who:a.name,tool:o.tool,text:o.task});
+ refreshAgent(s,a);
+},3600);
+setInterval(()=>{
+ const s=byId('ws'),a=s.agents[0];
+ if(a.state==='thinking'){a.state='working';a.tool='Write';a.task='mockups/b-guild-hall.html'}
+ else{a.state='thinking';a.tool=null;a.task='what the scouts brought back'}
+ a.since=Date.now();s.feed.unshift({t:Date.now(),who:a.name,tool:a.tool,text:a.task});
+ refreshAgent(s,a);
+},9000);
+
+render();
+</script>
+</body>
+</html>

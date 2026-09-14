@@ -1,0 +1,16 @@
+# Build context is the agent-deck folder. Keep the image to Node plus the app.
+.git
+.gitignore
+.dockerignore
+Dockerfile
+compose.yaml
+node_modules
+tools/smoke-out
+*.log
+agentdeck.json
+.DS_Store
+settings.json.bak
+tests
+# recordings are for tests; the demo file is needed at runtime by --demo
+fixtures/*
+!fixtures/demo.jsonl

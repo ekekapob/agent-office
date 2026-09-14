@@ -1,0 +1,87 @@
+/* Agent Deck — app.css (owner B)
+   Shell: top bar, tabs, stats/status strip, scene/stage/canvas frame, view controls,
+   legend, panel container, footer, error toasts. Fonts (VT323 + Press Start 2P via
+   Google Fonts, both with generic fallbacks) and the CSS custom properties that
+   css/overlays.css (owner D) reads for colour and type. Ported from the look of
+   mockups/f-spaceship-deck.html; kept renderer- and theme-agnostic — actual scene
+   colours come from themes/*.json via theme.js, not from this file. */
+
+:root {
+  --bg: #0a0f1e; --panel: #111a30; --panel2: #0d1527; --line: #26324f; --text: #e8edff; --muted: #8e99bb;
+  --work: #3ddc97; --think: #6aa6ff; --wait: #ffb347; --idle: #7f8ba6; --done: #b48cff;
+  --pix: 'Press Start 2P', monospace;
+  --game: 'VT323', ui-monospace, monospace;
+  --ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: light) {
+  /* The deck is a dark scene by design (canvas art + neon/holo overlays); keep the
+     shell dark in both OS themes rather than fight the art with a light chrome. */
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--ui); font-size: 14px; display: flex; flex-direction: column; min-height: 100vh; }
+button, select { font: inherit; }
+.muted { color: var(--muted); }
+.small { font-size: 11.5px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---------- top bar ---------- */
+.topbar { display: flex; align-items: center; gap: 16px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: linear-gradient(#131c33, #0f172b); flex-wrap: wrap; }
+.brand { font-family: var(--pix); font-size: 12px; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.brand .sub { font-family: var(--ui); font-size: 12px; color: var(--muted); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { font-family: var(--game); font-size: 18px; line-height: 1; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: #0e1730; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.tabs button.on { background: #1b2750; color: var(--text); border-color: #3b4f8f; }
+.tabs button small { font-size: 13px; }
+.tabs .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.tabs .dot.busy { background: var(--work); } .tabs .dot.waiting { background: var(--wait); }
+.tabs .dot.idle { background: var(--idle); } .tabs .dot.stale { background: var(--muted); } .tabs .dot.bad { background: #ff4d4d; }
+.stats { margin-left: auto; display: flex; gap: 16px; font-family: var(--game); font-size: 19px; color: var(--muted); align-items: center; }
+.stats b { color: var(--text); }
+.stats .warn b, .stats .hot { color: var(--wait); }
+.stats .clock { font-variant-numeric: tabular-nums; color: var(--text); padding-left: 12px; border-left: 1px solid var(--line); }
+.stats select#themesel { font-family: var(--ui); font-size: 12.5px; background: #0e1730; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+
+/* ---------- stream status strip ---------- */
+.status { font-family: var(--game); font-size: 17px; }
+.status.live { color: var(--work); }
+.status.reconnecting { color: var(--wait); }
+.status.disconnected { color: #ff4d4d; }
+
+main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; flex: 1; min-height: 0; }
+@media (max-width: 1000px) { main { grid-template-columns: 1fr; } .panel { border-left: 0; border-top: 1px solid var(--line); } }
+
+/* ---------- scene / stage ---------- */
+.scene { padding: 18px 18px 24px; overflow: auto; display: flex; flex-direction: column; gap: 12px; align-items: center; background: radial-gradient(ellipse at 50% 30%, #101a3a 0, #0a0f1e 70%); }
+.stage { position: relative; line-height: 0; background: #070b18; border: 3px solid #26324f; border-radius: 8px; box-shadow: 0 12px 0 #05070f, 0 0 0 1px #000; overflow: hidden; }
+.stage canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: grab; }
+.stage.dragging canvas { cursor: grabbing; }
+.stage:fullscreen { border: 0; border-radius: 0; box-shadow: none; background: #04070f; }
+.stage.max { position: fixed; inset: 0; z-index: 50; border: 0; border-radius: 0; box-shadow: none; }
+
+.viewctl { position: absolute; right: 10px; top: 10px; z-index: 6; pointer-events: auto; display: flex; gap: 6px; align-items: center; opacity: .9; }
+.viewctl #zoomchip { font-family: var(--game); font-size: 16px; color: var(--muted); min-width: 34px; text-align: center; }
+.btn { font-family: var(--game); font-size: 16px; line-height: 1; padding: 5px 9px; border-radius: 6px; border: 1px solid #3b4f8f; background: #1b2750; color: var(--text); cursor: pointer; white-space: nowrap; }
+.btn:hover { background: #243466; }
+
+.legend { display: flex; gap: 14px 22px; flex-wrap: wrap; justify-content: center; font-family: var(--game); font-size: 17px; color: var(--muted); max-width: 960px; }
+.legend span { display: flex; align-items: center; gap: 7px; }
+.legend i { width: 10px; height: 10px; display: inline-block; border-radius: 2px; }
+
+/* ---------- right panel container (cards themselves: overlays.css .deck-panel) ---------- */
+.panel { border-left: 1px solid var(--line); background: var(--panel); padding: 16px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- footer + error toasts ---------- */
+footer { padding: 8px 18px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; justify-content: space-between; }
+kbd { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; background: #1a2440; border: 1px solid #2c3a66; border-radius: 4px; padding: 0 5px; }
+.diag { cursor: pointer; color: var(--muted); }
+.diag.bad { color: #ff8a8a; }
+.errbar { position: fixed; right: 14px; bottom: 44px; z-index: 2000; display: flex; flex-direction: column; gap: 6px; max-width: 460px; }
+.errbar[hidden] { display: none; }
+.err { background: #2a0e12; border: 2px solid #ff4d4d; border-radius: 6px; padding: 8px 10px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #ffd9d9; box-shadow: 3px 3px 0 #000a; display: flex; gap: 8px; align-items: flex-start; line-height: 1.35; }
+.err .t { color: #ff8a8a; white-space: nowrap; }
+.err .m { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.err button { background: none; border: 1px solid #ff4d4d66; color: #ffd9d9; border-radius: 4px; cursor: pointer; font-size: 11px; padding: 1px 6px; }
+.err button:hover { background: #ff4d4d33; }

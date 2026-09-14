@@ -1,0 +1,24 @@
+# Agent Deck in Docker. From this folder:
+#   docker compose up --build
+# then open http://localhost:7777
+#
+# The container reads your Claude Code files through a read-only bind mount and cannot see
+# host processes, so session liveness comes from file freshness (stale_after_s, default 180 s).
+# Hooks on the host keep posting to http://127.0.0.1:7777/hook/... because the port is published.
+services:
+  agent-deck:
+    build: .
+    image: agent-deck:local
+    container_name: agent-deck
+    init: true
+    restart: unless-stopped
+    ports:
+      # localhost only (decision: access is localhost only). Use "7777:7777" to share on the LAN.
+      - "127.0.0.1:7777:7777"
+    volumes:
+      # ~ expands to your home on macOS, Linux and Windows (USERPROFILE).
+      - ~/.claude:/data/claude:ro
+      # Optional: your own config. Copy agentdeck.example.json to agentdeck.json first.
+      # - ./agentdeck.json:/app/agentdeck.json:ro
+    environment:
+      AGENTDECK_MODE: docker

@@ -1,0 +1,10 @@
+{
+  "_note": "Shape from Claude Code hook documentation; not yet captured live on this machine. The server must tolerate extra or missing fields.",
+  "hook_event_name": "PermissionRequest",
+  "session_id": "5c704dc8-c32c-4524-a3b2-1e286f657bb1",
+  "transcript_path": "/Users/me/.claude/projects/-Users-john-Documents-GitHub-agent-workspace/5c704dc8-c32c-4524-a3b2-1e286f657bb1.jsonl",
+  "cwd": "/Users/me/Documents/GitHub/agent-workspace",
+  "permission_mode": "default",
+  "tool_name": "Edit",
+  "tool_input": { "file_path": "/Users/me/Documents/GitHub/jenkins/casc.yaml" }
+}

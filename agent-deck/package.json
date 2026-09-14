@@ -1,0 +1,17 @@
+{
+  "name": "agent-deck",
+  "version": "0.1.0",
+  "description": "Local isometric dashboard for Claude Code sessions and their agents. Reads ~/.claude, never calls a model.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node server.js --demo",
+    "test": "node --test tests/",
+    "smoke": "node tools/smoke.mjs",
+    "make-demo": "node tools/make-demo.mjs",
+    "print-hooks": "node server.js --print-hooks",
+    "install-hooks": "node server.js --install-hooks"
+  }
+}

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pixel Campus · Mockup C · Top-down Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{
+  --grass:#7ec850;--grass2:#74bd48;--path:#e6d6a3;--path2:#d6c48c;--wall:#f6ead0;--wall2:#e2d3b0;--wood:#b0783f;--wood2:#8a5a2b;--water:#5db6f0;
+  --work:#2fb673;--think:#3b82f6;--wait:#f59e0b;--idle:#8b95a5;--done:#8b5cf6;
+  --ink:#1e2a3a;--panel:#fffaf0;--panel2:#fff;--line:#e3d7bf;--muted:#6b7686;
+  --pix:'Press Start 2P',monospace;--game:'VT323',ui-monospace,monospace;--ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:#d9efc4;color:var(--ink);font-family:var(--ui);font-size:14px;display:flex;flex-direction:column;min-height:100vh}
+button{font:inherit}
+.muted{color:var(--muted)}.small{font-size:11.5px}.grow{flex:1;min-width:0}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;gap:16px;padding:10px 18px;background:#fff7e0;border-bottom:4px solid #c9b57a;flex-wrap:wrap}
+.brand{font-family:var(--pix);font-size:12px;display:flex;align-items:center;gap:10px;white-space:nowrap;color:#3a6b2a}
+.brand .sub{font-family:var(--ui);font-size:12px;color:var(--muted)}
+.views{display:flex;gap:6px;flex-wrap:wrap}
+.views button{font-family:var(--game);font-size:18px;line-height:1;padding:6px 12px;border-radius:8px;border:2px solid #c9b57a;background:#fff;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 2px 0 #c9b57a}
+.views button.on{background:#3a6b2a;color:#fff;border-color:#2a4f1e;box-shadow:0 2px 0 #2a4f1e}
+.views small{font-size:13px;opacity:.85}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.dot.busy{background:var(--work)}.dot.waiting{background:var(--wait)}.dot.idle{background:var(--idle)}
+.stats{margin-left:auto;display:flex;gap:16px;font-family:var(--game);font-size:19px;color:var(--muted);align-items:center}
+.stats b{color:var(--ink)}.stats .warn b{color:var(--wait)}
+.stats .clock{font-variant-numeric:tabular-nums;color:var(--ink);padding-left:12px;border-left:1px solid #c9b57a}
+.ribbon{font-family:var(--pix);font-size:8px;color:#fff;background:var(--wait);padding:4px 8px;border-radius:4px;letter-spacing:1px}
+
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;flex:1;min-height:0}
+@media (max-width:1000px){main{grid-template-columns:1fr}.panel{border-left:0;border-top:4px solid #c9b57a}}
+
+/* ---------- world map ---------- */
+.world{position:relative;overflow:auto;padding:22px}
+.map{position:relative;width:960px;height:600px;margin:0 auto;background:repeating-conic-gradient(var(--grass) 0 25%,var(--grass2) 0 50%) 0 0/32px 32px;border:4px solid #4f7f2f;border-radius:8px;box-shadow:0 8px 0 #4f7f2f55;overflow:hidden}
+.path{position:absolute;background:repeating-conic-gradient(var(--path) 0 25%,var(--path2) 0 50%) 0 0/16px 16px;border:2px solid #c9b57a}
+.pond{position:absolute;background:var(--water);border-radius:45% 55% 50% 50%/55% 45% 55% 45%;border:3px solid #3b8fd0;box-shadow:inset 0 0 0 6px #7fc8f8}
+.pond::after{content:"";position:absolute;left:30%;top:35%;width:20px;height:6px;border-radius:3px;background:#fff8;animation:ripple 2.4s infinite}
+@keyframes ripple{50%{transform:translateX(12px);opacity:.4}}
+.tree{position:absolute;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6dbf4a,#2f7a2a);box-shadow:0 3px 0 #0003}
+.tree::after{content:"";position:absolute;left:11px;bottom:-6px;width:6px;height:8px;background:#6b4a2a}
+.gate{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-family:var(--pix);font-size:9px;color:#fff;background:#3a6b2a;border:3px solid #2a4f1e;border-bottom:0;padding:6px 12px;border-radius:6px 6px 0 0;letter-spacing:1px}
+
+/* ---------- buildings ---------- */
+.bld{position:absolute;display:flex;flex-direction:column;cursor:pointer;transition:transform .15s;filter:drop-shadow(0 6px 0 #0002);--rc:var(--idle)}
+.bld:hover{transform:translateY(-2px)}
+.bld.busy{--rc:var(--work)}.bld.waiting{--rc:var(--wait)}.bld.idle{--rc:var(--idle)}
+.roofband{background:var(--rc);background-image:repeating-linear-gradient(90deg,transparent 0 14px,#0002 14px 16px);border:3px solid #3a2a1a;border-bottom:0;border-radius:6px 6px 0 0;padding:6px 10px;display:flex;align-items:center;gap:8px;font-family:var(--game);font-size:19px;line-height:1;color:#fff;text-shadow:0 1px 0 #0006}
+.bld.waiting .roofband{animation:roofblink 1.2s infinite}
+@keyframes roofblink{50%{filter:brightness(1.25)}}
+.roofband .flag{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0003}
+.roofband .bmeta{font-size:13px;opacity:.92;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.interior{position:relative;flex:1;background:repeating-conic-gradient(#e9dcc0 0 25%,#dccdaa 0 50%) 0 0/24px 24px;border:3px solid #3a2a1a;border-top:0;min-height:120px}
+.wall{position:absolute;left:0;right:0;top:0;height:14px;background:linear-gradient(var(--wall),var(--wall2));border-bottom:2px solid #b8a682}
+.door{position:absolute;bottom:-3px;left:50%;width:22px;height:16px;margin-left:-11px;background:var(--wood2);border:2px solid #3a2a1a;border-bottom:0;border-radius:4px 4px 0 0}
+.desk{position:absolute;width:34px;height:20px;background:var(--wood);border:2px solid #3a2a1a;border-radius:3px}
+.desk::after{content:"";position:absolute;left:10px;top:3px;width:12px;height:9px;background:#233;border-radius:2px}
+.desk.on::after{background:#7cffb2;box-shadow:0 0 6px #7cffb2}
+.desk.hot::after{background:var(--wait)}
+.plant{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6dbf4a,#2f7a2a)}
+
+/* ---------- top-down sprite ---------- */
+.td{position:absolute;width:26px;height:30px;--sc:var(--idle);cursor:pointer}
+.td.working{--sc:var(--work)}.td.thinking{--sc:var(--think)}.td.waiting{--sc:var(--wait)}.td.idle{--sc:var(--idle)}.td.done{--sc:var(--done)}
+.td .head{position:absolute;left:5px;top:0;width:16px;height:16px;border-radius:50%;background:#f2c9a0;box-shadow:inset 0 -3px 0 #e0b088}
+.td .hair{position:absolute;left:5px;top:0;width:16px;height:8px;border-radius:8px 8px 3px 3px;background:var(--hair)}
+.td .body{position:absolute;left:3px;top:13px;width:20px;height:13px;border-radius:5px 5px 3px 3px;background:var(--shirt)}
+.td .feet{position:absolute;left:7px;top:25px;width:12px;height:4px;background:#3a2a1a;border-radius:2px}
+.td.working{animation:walk var(--dur,5s) steps(12) infinite alternate}
+@keyframes walk{to{transform:translateX(var(--dx,60px))}}
+.td.working .feet{animation:step .3s steps(2) infinite}
+@keyframes step{to{transform:translateX(2px)}}
+.td.done{opacity:.6}
+.td .tag{position:absolute;top:-30px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;border:2px solid var(--sc);border-radius:6px;padding:2px 6px;font-size:10.5px;color:var(--ink);box-shadow:0 2px 0 #0003;max-width:170px;overflow:hidden;text-overflow:ellipsis}
+.td .tag::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--sc);border-bottom:0}
+.td .tag code{font-family:ui-monospace,Menlo,monospace;font-size:10px;background:#eef;padding:0 2px;border-radius:2px}
+.td.waiting .tag{background:#fff4d6}
+.td .ex{position:absolute;top:-50px;left:50%;transform:translateX(-50%);font-family:var(--pix);font-size:13px;color:var(--wait);text-shadow:0 1px 0 #000;animation:bounce .5s infinite alternate}
+@keyframes bounce{to{transform:translate(-50%,-5px)}}
+.td .zz{position:absolute;top:-14px;left:20px;font-family:var(--game);font-size:15px;color:var(--ink);animation:zz 2.4s infinite}
+.td .zz b{position:absolute;left:8px;top:-8px;font-weight:400;animation:zz 2.4s infinite .8s}
+@keyframes zz{0%{opacity:0;transform:translateY(4px)}30%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.td .nm{position:absolute;top:31px;left:50%;transform:translateX(-50%);font-family:var(--game);font-size:13px;line-height:1;white-space:nowrap;color:var(--ink);background:#fff9;padding:0 3px;border-radius:3px}
+.td.sel .head{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--think)}
+.map.focus .bld:not(.sel){filter:drop-shadow(0 6px 0 #0002) saturate(.4) brightness(.85)}
+
+/* ---------- single building view ---------- */
+.focus{max-width:960px;margin:0 auto 30px}
+.crumbs{display:flex;align-items:center;gap:14px;margin-bottom:12px;font-family:var(--game);font-size:20px;color:var(--muted)}
+.room{position:relative;height:430px;border:4px solid #3a2a1a;border-radius:8px;overflow:hidden;background:repeating-conic-gradient(#e9dcc0 0 25%,#dccdaa 0 50%) 0 0/32px 32px;box-shadow:0 8px 0 #0002}
+.room .wall{height:46px;display:flex;align-items:center;gap:14px;padding:0 16px;font-family:var(--game);font-size:24px;color:var(--ink);border-bottom:4px solid #b8a682}
+.room .wall .sign{background:var(--rc);color:#fff;padding:4px 12px;border-radius:4px;text-shadow:0 1px 0 #0006;border:2px solid #3a2a1a}
+.room .wall .wmeta{font-size:15px;color:var(--muted);margin-left:auto}
+.room.busy{--rc:var(--work)}.room.waiting{--rc:var(--wait)}.room.idle{--rc:var(--idle)}
+.room .rug{position:absolute;left:40px;right:40px;bottom:30px;height:90px;background:repeating-linear-gradient(90deg,#c96a4a 0 16px,#b85a3a 16px 32px);border:4px solid #8a3a2a;border-radius:6px;opacity:.85}
+.room .desk{width:70px;height:40px}.room .desk::after{left:20px;top:6px;width:26px;height:18px}
+.map .td .tag{max-width:96px}
+.map .td .nm{max-width:82px;overflow:hidden;text-overflow:ellipsis}
+.room .td{width:50px;height:60px}
+.room .td .head{left:10px;top:0;width:30px;height:30px;box-shadow:inset 0 -5px 0 #e0b088}
+.room .td .hair{left:10px;top:0;width:30px;height:15px;border-radius:15px 15px 5px 5px}
+.room .td .body{left:6px;top:25px;width:38px;height:25px;border-radius:9px 9px 5px 5px}
+.room .td .feet{left:14px;top:48px;width:22px;height:7px;border-radius:3px}
+.room .td .tag{font-size:12.5px;max-width:170px;min-width:110px;top:auto;bottom:70px;white-space:normal;text-align:left}
+.room .td .nm{font-size:16px;top:64px}
+.room .td .ex{top:-74px}
+.room .td .zz{top:-20px;left:40px;font-size:20px}
+.room .td.sel .head{box-shadow:0 0 0 4px #fff,0 0 0 7px var(--think)}
+.room .td.working{animation:walkbig var(--dur,5s) steps(12) infinite alternate}
+@keyframes walkbig{to{transform:translateX(var(--dx,60px))}}
+.agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;margin-top:14px}
+.acard{background:#fff;border:2px solid var(--line);border-left:5px solid var(--sc);border-radius:10px;padding:10px 12px;cursor:pointer;--sc:var(--idle);box-shadow:0 2px 0 var(--line)}
+.acard:hover{background:#fffdf7}.acard.sel{outline:3px solid #3b82f655}
+.acard.working{--sc:var(--work)}.acard.thinking{--sc:var(--think)}.acard.waiting{--sc:var(--wait)}.acard.idle{--sc:var(--idle)}.acard.done{--sc:var(--done)}
+.acard .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--game);font-size:20px;line-height:1}
+.acard .st{font-size:15px;color:var(--sc);white-space:nowrap}
+.acard .task{font-size:12.5px;margin-top:7px;word-break:break-word}
+.acard .sub{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
+.acard code,.panel code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#f1ecdd;padding:1px 4px;border-radius:4px;word-break:break-all}
+
+/* ---------- side panel ---------- */
+.panel{border-left:4px solid #c9b57a;background:var(--panel);padding:16px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:2px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 2px 0 var(--line)}
+.card h3{margin:0 0 8px;font-family:var(--game);font-size:21px;font-weight:400;color:#2a4f1e;display:flex;align-items:center;gap:8px}
+.card.attn{border-color:#f0c470;background:#fff8e6}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed var(--line);font-size:12.5px}
+.row:first-of-type{border-top:0}.row.click{cursor:pointer}.row.click:hover,.row.on{background:#f7f2e4;margin:0 -6px;padding-left:6px;padding-right:6px;border-radius:6px}
+.mini{width:70px;text-align:right}
+.bar{height:7px;background:#eee6d2;border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--think),var(--work));border-radius:4px}
+.bar.hot i{background:linear-gradient(90deg,var(--wait),#ef4444)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 14px;font-size:12.5px;margin:0}
+.kv dt{color:var(--muted)}.kv dd{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prompt{margin:0;font-size:13px;line-height:1.45;font-style:italic}
+.feed{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.ev{display:grid;grid-template-columns:40px 20px minmax(0,1fr);gap:6px;align-items:start;line-height:1.35}
+.ev .t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:11.5px;padding-top:1px}
+.ev.you .w{color:#b45309}
+.btn{font-family:var(--game);font-size:16px;line-height:1;padding:5px 9px;border-radius:6px;border:2px solid #2a4f1e;background:#3a6b2a;color:#fff;cursor:pointer;white-space:nowrap;box-shadow:0 2px 0 #2a4f1e}
+.btn:hover{background:#458034}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px}
+.legend span{display:flex;align-items:center;gap:8px}
+.src{margin:0;padding-left:18px;font-size:12px;line-height:1.55;color:var(--muted)}
+footer{padding:8px 18px;background:#fff7e0;border-top:4px solid #c9b57a;font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+kbd{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#fff;border:1px solid #c9b57a;border-radius:4px;padding:0 5px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🌳 PIXEL CAMPUS <span class="sub">Mockup C · top-down map, one building per session</span></div>
+  <nav class="views" id="views"></nav>
+  <div class="stats"><span class="ribbon">SAMPLE DATA</span><span id="st-sessions"></span><span id="st-agents"></span><span class="warn" id="st-wait"></span><span class="clock" id="clock"></span></div>
+</header>
+<main>
+  <section class="world" id="world"></section>
+  <aside class="panel" id="panel"></aside>
+</main>
+<footer>
+  <span>Each building is one Claude Code session; the roof colour is its status. People inside are the session lead and its subagents, walking while they work.</span>
+  <span>Click a building to go inside · <kbd>0</kbd> campus · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> buildings · <kbd>Esc</kbd> back</span>
+</footer>
+
+<script>
+/* ===================== sample data (same three sessions as mockups A and B) ===================== */
+const NOW=Date.now(),S=1000,M=60*S,H=60*M;
+const ICON={Grep:'🔍',Read:'📖',Bash:'💻',Edit:'✏️',Write:'📝',Agent:'🧬',Glob:'🗂️',WebFetch:'🌐'};
+const STATE_LABEL={working:'working',thinking:'thinking',waiting:'needs approval',idle:'idle',done:'finished'};
+const STATUS_LABEL={busy:'busy',waiting:'needs you',idle:'idle'};
+const TYPE_LABEL={lead:'Session lead',Explore:'Explore subagent',Plan:'Plan subagent','general-purpose':'General subagent','code-review':'Review subagent'};
+const PAL={lead:{shirt:'#3b4fd8',hair:'#2b1d0e'},Explore:{shirt:'#2f9e6b',hair:'#5a3a1a'},Plan:{shirt:'#7b5bd6',hair:'#8a8a8a'},'general-purpose':{shirt:'#e07a2f',hair:'#1a1a1a'},'code-review':{shirt:'#d64b4b',hair:'#3a2a1a'}};
+
+const SESSIONS=[
+ {id:'ws',num:1,pid:87328,name:'agent workspace',cwd:'~/Documents/GitHub/agent-workspace',branch:'main',status:'busy',startedAt:NOW-11*M,ctx:23,turns:6,tokIn:148200,tokOut:9400,model:'fable-5.1',
+  pos:{left:60,top:70,w:450,h:190},
+  prompt:'Draft HTML mockups for a 2D gamified dashboard of sessions and agents',
+  agents:[
+   {id:'main',type:'lead',name:'Lead',state:'thinking',tool:null,task:'Reviewing what the subagents found',since:NOW-40*S},
+   {id:'ex1',type:'Explore',name:'Explore · hooks',state:'working',tool:'Grep',task:'"SubagentStart" in ~/.claude',since:NOW-3*M},
+   {id:'ex2',type:'Explore',name:'Explore · registry',state:'working',tool:'Read',task:'sessions/87328.json',since:NOW-2*M},
+   {id:'gp1',type:'general-purpose',name:'Builder',state:'working',tool:'Bash',task:'python3 server.py --check',since:NOW-5*M},
+   {id:'pl1',type:'Plan',name:'Architect',state:'done',tool:null,task:'Plan delivered · 3 options',since:NOW-7*M},
+  ],
+  feed:[
+   {t:NOW-11*M,who:'you',text:'Draft HTML mockups for a 2D gamified dashboard of sessions and agents'},
+   {t:NOW-10*M-20*S,who:'Lead',tool:'Bash',text:'ls -la ~/.claude/sessions'},
+   {t:NOW-9*M,who:'Lead',tool:'Agent',text:'spawned Explore · hooks'},
+   {t:NOW-9*M+5*S,who:'Lead',tool:'Agent',text:'spawned Explore · registry'},
+   {t:NOW-8*M,who:'Lead',tool:'Agent',text:'spawned Architect (Plan)'},
+   {t:NOW-7*M,who:'Architect',tool:'Write',text:'plan.md · 3 options'},
+   {t:NOW-6*M,who:'Lead',tool:'Agent',text:'spawned Builder'},
+   {t:NOW-5*M,who:'Builder',tool:'Write',text:'server.py'},
+   {t:NOW-3*M,who:'Explore · hooks',tool:'Grep',text:'"SubagentStart" in ~/.claude'},
+   {t:NOW-2*M,who:'Explore · registry',tool:'Read',text:'sessions/87328.json'},
+   {t:NOW-40*S,who:'Lead',text:'thinking…'},
+  ]},
+ {id:'jk',num:2,pid:30536,name:'jenkins-c0',cwd:'~/Documents/GitHub/jenkins',branch:'main',status:'waiting',startedAt:NOW-6*H-35*M,ctx:61,turns:42,tokIn:1240000,tokOut:88000,model:'fable-5.1',
+  pos:{left:590,top:60,w:300,h:170},
+  prompt:'Lock down Jenkins authorization and verify the API token wiring',
+  agents:[
+   {id:'main',type:'lead',name:'Lead',state:'waiting',tool:'Edit',task:'jenkins/casc.yaml',since:NOW-90*S},
+   {id:'gp1',type:'general-purpose',name:'Runner',state:'working',tool:'Bash',task:'docker exec jenkins sh -c "grep authorizationStrategy …"',since:NOW-4*M},
+  ],
+  feed:[
+   {t:NOW-6*H-35*M,who:'you',text:'Lock down Jenkins authorization and verify the API token wiring'},
+   {t:NOW-20*M,who:'Lead',tool:'Read',text:'jenkins/casc.yaml'},
+   {t:NOW-12*M,who:'Lead',tool:'Agent',text:'spawned Runner'},
+   {t:NOW-9*M,who:'Runner',tool:'Bash',text:'docker exec jenkins cat /var/jenkins_home/config.xml'},
+   {t:NOW-4*M,who:'Runner',tool:'Bash',text:'docker exec jenkins sh -c "grep authorizationStrategy …"'},
+   {t:NOW-90*S,who:'Lead',tool:'Edit',text:'jenkins/casc.yaml · waiting for approval'},
+  ]},
+ {id:'hn',num:3,pid:88313,name:'harness',cwd:'~',branch:'—',status:'idle',startedAt:NOW-27*M,ctx:8,turns:3,tokIn:41000,tokOut:2100,model:'fable-5.1',
+  pos:{left:640,top:340,w:250,h:160},
+  prompt:'Review john_guard.py rules',
+  agents:[{id:'main',type:'lead',name:'Lead',state:'idle',tool:null,task:'Waiting for your next prompt',since:NOW-12*M}],
+  feed:[
+   {t:NOW-27*M,who:'you',text:'Review john_guard.py rules'},
+   {t:NOW-25*M,who:'Lead',tool:'Read',text:'~/.claude/harness/john-harness/john_guard.py'},
+   {t:NOW-14*M,who:'Lead',tool:'Grep',text:'"deny" in john_guard.py'},
+   {t:NOW-12*M,who:'Lead',text:'replied · 4 findings'},
+  ]},
+];
+SESSIONS.forEach(s=>s.feed.sort((a,b)=>b.t-a.t));
+if(!['all',...SESSIONS.map(s=>s.id)].includes((location.hash||'#all').slice(1)))history.replaceState(null,'','#all');
+const ROTATE={
+ Explore:[{tool:'Grep',task:'"SubagentStop" in ~/.claude'},{tool:'Read',task:'subagents/agent-a1f3.jsonl'},{tool:'Glob',task:'~/.claude/sessions/*.json'},{tool:'Grep',task:'"messagingSocketPath"'},{tool:'Read',task:'sessions/30536.json'}],
+ 'general-purpose':[{tool:'Bash',task:'python3 server.py --check'},{tool:'Edit',task:'server.py · tail loop'},{tool:'Bash',task:'curl -s localhost:7777/api/sessions'},{tool:'Write',task:'static/index.html'},{tool:'Bash',task:'docker exec jenkins sh -c "grep authorizationStrategy …"'}],
+};
+
+/* ===================== helpers ===================== */
+let view=(location.hash||'#all').slice(1),selAgent=null;
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function byId(id){return SESSIONS.find(s=>s.id===id)}
+function ago(t){let d=Math.max(0,Date.now()-t)/1000;if(d<60)return Math.floor(d)+'s';if(d<3600)return Math.floor(d/60)+'m';return Math.floor(d/3600)+'h '+Math.floor(d%3600/60)+'m'}
+function agoSpan(t){return `<span data-ago="${t}">${ago(t)}</span>`}
+function hhmm(t){return new Date(t).toTimeString().slice(0,5)}
+function fmtTok(n){return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?Math.round(n/1e3)+'k':n}
+function stColor(st){return {working:'var(--work)',thinking:'var(--think)',waiting:'var(--wait)',idle:'var(--idle)',done:'var(--done)'}[st]}
+function agentCount(){return SESSIONS.reduce((n,s)=>n+s.agents.length,0)}
+function waitingList(){const w=[];SESSIONS.forEach(s=>s.agents.forEach(a=>{if(a.state==='waiting')w.push([s,a])}));return w}
+function tinyText(a){
+ switch(a.state){
+  case 'working':return `${ICON[a.tool]||'⚙️'} ${esc(a.tool)}`;
+  case 'thinking':return '💭 thinking';
+  case 'waiting':return `✋ ${esc(a.tool)}`;
+  case 'idle':return `☕ ${agoSpan(a.since)}`;
+  case 'done':return '✅ done';
+ }
+}
+function bubbleText(a,short){
+ switch(a.state){
+  case 'working':return `${ICON[a.tool]||'⚙️'} <b>${esc(a.tool)}</b> <code>${esc(a.task)}</code>`;
+  case 'thinking':return `💭 ${short?'thinking…':esc(a.task)+'…'}`;
+  case 'waiting':return `✋ <b>${esc(a.tool)}</b> <code>${esc(a.task)}</code>${short?'':'<br><b>needs your approval</b> · '+agoSpan(a.since)}`;
+  case 'idle':return `☕ idle ${agoSpan(a.since)}`;
+  case 'done':return `✅ ${esc(a.task)}`;
+ }
+}
+
+/* ===================== top-down sprite ===================== */
+function tdHTML(s,a,i,opts){
+ const p=PAL[a.type]||PAL.lead,key=s.id+':'+a.id;
+ const {left,top,dx,scale,short}=opts;
+ const fx=a.state==='waiting'?'<span class="ex">!</span>':a.state==='idle'?'<span class="zz">z<b>z</b></span>':'';
+ return `<div class="td ${a.state} ${selAgent===key?'sel':''}" data-a="${key}" title="${esc(a.name)} · ${TYPE_LABEL[a.type]||esc(a.type)}"
+   style="left:${left}px;top:${top}px;--shirt:${p.shirt};--hair:${p.hair};--dx:${dx}px;--dur:${4+i*0.9}s;${scale?`transform:scale(${scale});`:''}"
+   onclick="event.stopPropagation();selectAgent('${s.id}','${a.id}')">
+  <div class="tag">${short?tinyText(a):bubbleText(a)}</div>${fx}
+  <div class="body"></div><div class="head"></div><div class="hair"></div><div class="feet"></div>
+  <div class="nm">${esc(a.name)}</div></div>`;
+}
+function bldHTML(s){
+ const {left,top,w,h}=s.pos;
+ const desks=s.agents.map((a,i)=>`<div class="desk ${a.state==='working'?'on':a.state==='waiting'?'hot':''}" style="left:${18+i*84}px;top:${22}px"></div>`).join('');
+ const people=s.agents.map((a,i)=>tdHTML(s,a,i,{left:22+i*84,top:64,dx:36,short:true})).join('');
+ return `<div class="bld ${s.status} ${view===s.id?'sel':''}" data-sid="${s.id}" style="left:${left}px;top:${top}px;width:${w}px;height:${h}px">
+  <div class="roofband"><span class="flag"></span>${esc(s.name)}<span class="bmeta">${s.agents.length} agent${s.agents.length>1?'s':''} · ${STATUS_LABEL[s.status]}</span></div>
+  <div class="interior"><div class="wall"></div>${desks}${people}<div class="plant" style="right:10px;bottom:10px"></div><div class="door"></div></div></div>`;
+}
+function agentCard(s,a){
+ const key=s.id+':'+a.id;
+ return `<div class="acard ${a.state} ${selAgent===key?'sel':''}" data-a="${key}" onclick="selectAgent('${s.id}','${a.id}')">
+  <div class="h"><span>${esc(a.name)}</span><span class="st">● ${STATE_LABEL[a.state]}</span></div>
+  <div class="task">${bubbleText(a)}</div>
+  <div class="sub"><span>${TYPE_LABEL[a.type]||esc(a.type)}</span><span>since ${hhmm(a.since)}</span></div></div>`;
+}
+
+/* ===================== scene ===================== */
+function renderWorld(){
+ const W=$('world');
+ if(view==='all'){
+  W.innerHTML=`<div class="map">
+   <div class="path" style="left:270px;top:250px;width:44px;height:350px"></div>
+   <div class="path" style="left:270px;top:250px;width:470px;height:40px"></div>
+   <div class="path" style="left:700px;top:230px;width:40px;height:110px"></div>
+   <div class="path" style="left:480px;top:265px;width:40px;height:335px"></div>
+   <div class="pond" style="left:80px;top:390px;width:170px;height:110px"></div>
+   ${[[30,300],[560,300],[300,330],[20,540],[400,540],[920,300],[915,540],[560,560],[380,420]].map(([x,y])=>`<div class="tree" style="left:${x}px;top:${y}px"></div>`).join('')}
+   ${SESSIONS.map(bldHTML).join('')}
+   <div class="gate">CLAUDE CAMPUS · ${SESSIONS.length} BUILDINGS · ${agentCount()} STAFF</div></div>`;
+  W.querySelectorAll('.bld').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.sid)));
+ }else{
+  const s=byId(view);
+  const desks=s.agents.map((a,i)=>`<div class="desk ${a.state==='working'?'on':a.state==='waiting'?'hot':''}" style="left:${110+i*180}px;top:100px"></div>`).join('');
+  const people=s.agents.map((a,i)=>tdHTML(s,a,i,{left:120+i*180,top:200,dx:70,short:false})).join('');
+  W.innerHTML=`<div class="focus">
+   <div class="crumbs"><button class="btn" onclick="setView('all')">← Campus</button><span>${esc(s.name)} · ${esc(s.cwd)}</span><span class="small" style="margin-left:auto">click a person to filter the activity feed</span></div>
+   <div class="room ${s.status}"><div class="wall"><span class="sign">${esc(s.name)}</span><span>${STATUS_LABEL[s.status]} · ${s.agents.length} inside</span><span class="wmeta">pid ${s.pid} · up ${agoSpan(s.startedAt)} · ctx ${s.ctx}%</span></div>
+    <div class="rug"></div>${desks}${people}<div class="plant" style="right:24px;top:70px;width:22px;height:22px"></div><div class="door" style="width:40px;height:26px;margin-left:-20px"></div></div>
+   <div class="agents">${s.agents.map(a=>agentCard(s,a)).join('')}</div></div>`;
+ }
+}
+
+/* ===================== side panel ===================== */
+function evHTML(e){return `<div class="ev ${e.who==='you'?'you':''}"><span class="t">${hhmm(e.t)}</span><span>${e.who==='you'?'🧑‍💻':(ICON[e.tool]||'•')}</span><span><span class="w">${esc(e.who)}</span> ${e.tool?`<b>${esc(e.tool)}</b> <code>${esc(e.text)}</code>`:esc(e.text)}</span></div>`}
+function allPanel(){
+ const w=waitingList();
+ return `
+ <div class="card attn"><h3>✋ Needs your attention</h3>${w.length?w.map(([s,a])=>`<div class="row"><span class="dot waiting"></span><div class="grow"><div><b>${esc(s.name)}</b> · ${esc(a.name)}</div><div class="muted">${esc(a.tool)} <code>${esc(a.task)}</code> · ${agoSpan(a.since)} ago</div></div><button class="btn" onclick="setView('${s.id}')">Go inside</button></div>`).join(''):'<div class="muted">Nothing is waiting on you.</div>'}</div>
+ <div class="card"><h3>🏘 Buildings</h3>${SESSIONS.map(s=>`<div class="row click" onclick="setView('${s.id}')"><span class="dot ${s.status}"></span><div class="grow"><div><b>${esc(s.name)}</b></div><div class="muted">${s.agents.length} agent${s.agents.length>1?'s':''} · ${s.agents.filter(a=>a.state==='working'||a.state==='thinking').length} active · up ${agoSpan(s.startedAt)}</div></div><div class="mini"><div class="bar ${s.ctx>50?'hot':''}"><i style="width:${s.ctx}%"></i></div><div class="muted small">ctx ${s.ctx}%</div></div></div>`).join('')}</div>
+ <div class="card"><h3>Legend</h3><div class="legend">
+  <span><i class="dot" style="background:var(--work)"></i>green roof · busy</span><span><i class="dot" style="background:var(--wait)"></i>amber roof · needs you</span>
+  <span><i class="dot" style="background:var(--idle)"></i>grey roof · idle</span><span>walking = running a tool</span>
+  <span>! above head = approval</span><span>zz = idle</span></div></div>
+ <div class="card"><h3>Where the real data comes from</h3><ul class="src">
+  <li>Buildings: <code>~/.claude/sessions/&lt;pid&gt;.json</code></li><li>People: transcript <code>.jsonl</code> + <code>subagents/</code></li>
+  <li>Speech bubbles: latest <code>tool_use</code> block</li><li>Amber roof: <code>PermissionRequest</code> hook</li></ul></div>`;
+}
+function sessionPanel(s){
+ const a=selAgent?s.agents.find(x=>s.id+':'+x.id===selAgent):null;
+ const feed=(a?s.feed.filter(e=>e.who===a.name||e.who==='you'):s.feed).slice(0,18);
+ return `
+ <div class="card"><h3><span class="dot ${s.status}"></span>${esc(s.name)}</h3>
+  <dl class="kv"><dt>Status</dt><dd>${STATUS_LABEL[s.status]}</dd><dt>Directory</dt><dd title="${esc(s.cwd)}">${esc(s.cwd)}</dd><dt>Branch</dt><dd>${esc(s.branch)}</dd><dt>PID</dt><dd>${s.pid}</dd><dt>Uptime</dt><dd>${agoSpan(s.startedAt)}</dd><dt>Model</dt><dd>${esc(s.model)}</dd><dt>Turns</dt><dd>${s.turns}</dd><dt>Tokens</dt><dd>${fmtTok(s.tokIn)} in · ${fmtTok(s.tokOut)} out</dd></dl>
+  <div class="bar ${s.ctx>50?'hot':''}" style="margin-top:10px"><i style="width:${s.ctx}%"></i></div><div class="muted small" style="margin-top:4px">Context window ${s.ctx}% used</div></div>
+ <div class="card"><h3>📌 Current assignment</h3><p class="prompt">“${esc(s.prompt)}”</p></div>
+ <div class="card"><h3>👥 Inside (${s.agents.length})</h3>${s.agents.map(x=>`<div class="row click ${selAgent===s.id+':'+x.id?'on':''}" onclick="selectAgent('${s.id}','${x.id}')"><span class="dot" style="background:${stColor(x.state)}"></span><div class="grow"><b>${esc(x.name)}</b> <span class="muted">· ${TYPE_LABEL[x.type]||esc(x.type)}</span><div class="muted">${STATE_LABEL[x.state]}${x.tool?' · '+esc(x.tool):''} · ${agoSpan(x.since)}</div></div></div>`).join('')}</div>
+ <div class="card"><h3>🕒 Activity ${a?`<span class="muted small">· ${esc(a.name)} only</span><button class="btn" style="margin-left:auto" onclick="selectAgent(null)">show all</button>`:''}</h3><div class="feed">${feed.map(evHTML).join('')}</div></div>`;
+}
+function renderPanel(){$('panel').innerHTML=view==='all'?allPanel():sessionPanel(byId(view))}
+function renderViews(){
+ $('views').innerHTML=`<button data-v="all" class="${view==='all'?'on':''}">🗺️ Campus</button>`+SESSIONS.map(s=>`<button data-v="${s.id}" class="${view===s.id?'on':''}"><span class="dot ${s.status}"></span>${esc(s.name)}<small>${s.agents.length}</small></button>`).join('');
+ $('views').querySelectorAll('button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+}
+function renderStats(){
+ $('st-sessions').innerHTML=`<b>${SESSIONS.length}</b> sessions`;$('st-agents').innerHTML=`<b>${agentCount()}</b> agents`;
+ const w=waitingList().length;$('st-wait').innerHTML=w?`<b>${w}</b> need${w>1?'':'s'} approval`:'';
+}
+function render(){renderViews();renderStats();renderWorld();renderPanel()}
+function setView(v){view=v;selAgent=null;history.replaceState(null,'','#'+v);render()}
+function selectAgent(sid,aid){
+ const key=sid?sid+':'+aid:null;selAgent=(selAgent===key)?null:key;
+ if(view==='all'&&sid){view=sid;render();return}
+ document.querySelectorAll('.td,.acard').forEach(el=>el.classList.toggle('sel',el.dataset.a===selAgent));
+ renderPanel();
+}
+function refreshAgent(s,a){
+ document.querySelectorAll(`.td[data-a="${s.id}:${a.id}"] .tag`).forEach(el=>el.innerHTML=view==='all'?tinyText(a):bubbleText(a));
+ document.querySelectorAll(`.acard[data-a="${s.id}:${a.id}"]`).forEach(el=>el.outerHTML=agentCard(s,a));
+ if(view===s.id)renderPanel();
+}
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'||e.key==='0')return setView('all');
+ const s=SESSIONS.find(x=>String(x.num)===e.key);if(s)setView(s.id);
+});
+
+/* ===================== fake liveness ===================== */
+setInterval(()=>{
+ $('clock').textContent=new Date().toLocaleTimeString([],{hour12:false});
+ document.querySelectorAll('[data-ago]').forEach(el=>el.textContent=ago(+el.dataset.ago));
+},1000);
+setInterval(()=>{
+ const pool=[];SESSIONS.forEach(s=>s.agents.forEach(a=>{if(a.state==='working'&&ROTATE[a.type])pool.push([s,a])}));
+ if(!pool.length)return;
+ const [s,a]=pool[Math.floor(Math.random()*pool.length)];
+ const opts=ROTATE[a.type].filter(o=>o.task!==a.task);const o=opts[Math.floor(Math.random()*opts.length)];
+ a.tool=o.tool;a.task=o.task;a.since=Date.now();
+ s.feed.unshift({t:Date.now(),who:a.name,tool:o.tool,text:o.task});
+ refreshAgent(s,a);
+},3600);
+setInterval(()=>{
+ const s=byId('ws'),a=s.agents[0];
+ if(a.state==='thinking'){a.state='working';a.tool='Write';a.task='mockups/c-pixel-campus.html'}
+ else{a.state='thinking';a.tool=null;a.task='Reviewing what the subagents found'}
+ a.since=Date.now();s.feed.unshift({t:Date.now(),who:a.name,tool:a.tool,text:a.task});
+ document.querySelectorAll(`.td[data-a="ws:main"]`).forEach(el=>{el.classList.remove('working','thinking','waiting','idle','done');el.classList.add(a.state)});
+ refreshAgent(s,a);
+},9000);
+
+render();
+</script>
+</body>
+</html>

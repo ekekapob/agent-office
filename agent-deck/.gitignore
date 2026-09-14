@@ -1,0 +1,7 @@
+# Agent Deck
+tools/smoke-out/
+*.log
+agentdeck.json
+.DS_Store
+settings.json.bak
+node_modules/

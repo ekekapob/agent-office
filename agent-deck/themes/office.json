@@ -1,0 +1,41 @@
+{
+  "name": "office",
+  "label": "Office",
+  "palette": {
+    "floor1": "#343f6b", "floor2": "#2f3a63", "grout": "#252e52",
+    "aisle1": "#4f2525", "aisle2": "#5a2a2a",
+    "wall": "#3a4780", "wall2": "#2b3766", "wainscot": "#1f2950",
+    "trim": "#7b8bc8", "trimDim": "#46569a",
+    "steel1": "#3a4468", "steel2": "#1e2540", "steel3": "#151a2e",
+    "base1": "#1a2242", "base2": "#111830",
+    "glass": "#8fa3ff",
+    "pod1": "#2b3766", "pod2": "#33407a", "podGrout": "#1a2242",
+    "bg": "#070b18"
+  },
+  "props": {
+    "desk": ["#a8733a", "#7a5230", "#5b3c22"],
+    "chair": ["#6b7bb8", "#3f4b7a", "#2e375c"],
+    "table": ["#8a6a3a", "#66492a", "#46311d"]
+  },
+  "figures": {
+    "lead": { "shirt": "#3b4fd8", "hair": "#2b1d0e", "pants": "#26305c", "acc": "tie", "crown": true },
+    "Explore": { "shirt": "#2f9e6b", "hair": "#5a3a1a", "pants": "#2b3a4b", "acc": "cap" },
+    "Plan": { "shirt": "#7b5bd6", "hair": "#8a8a8a", "pants": "#3a2a5a", "acc": "glasses" },
+    "general-purpose": { "shirt": "#e07a2f", "hair": "#1a1a1a", "pants": "#3a2a1a", "acc": "hat" },
+    "code-review": { "shirt": "#d64b4b", "hair": "#3a2a1a", "pants": "#2a1a1a", "acc": "badge" },
+    "default": { "shirt": "#7f8ba6", "hair": "#3a2a1a", "pants": "#2b3a4b", "acc": null }
+  },
+  "states": {
+    "working": "#3ddc97", "thinking": "#6aa6ff", "waiting": "#ffb347", "idle": "#7f8ba6",
+    "done": "#b48cff", "joining": "#b48cff", "leaving": "#b48cff", "compacting": "#ff4d4d",
+    "teleporting": "#7fe7ff"
+  },
+  "models": {
+    "claude-fable-5-1": { "chip": "F5.1", "color": "#e0b354" },
+    "claude-opus-5": { "chip": "O5", "color": "#b48cff" },
+    "claude-sonnet-5": { "chip": "S5", "color": "#6aa6ff" },
+    "claude-haiku-4-5-20251001": { "chip": "H4.5", "color": "#3ddc97" }
+  },
+  "text": { "deck": "OFFICE", "door": "ENTRANCE", "board": "ASSIGNMENTS", "pod": "MEETING ROOM", "pad": "BREAK ROOM" },
+  "features": { "stars": false, "viewports": false, "planet": false }
+}

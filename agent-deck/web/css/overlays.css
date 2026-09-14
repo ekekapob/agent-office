@@ -1,0 +1,135 @@
+/* Agent Deck — overlays.css (owner D)
+   Styles for everything drawn in HTML above the canvas and in the right column:
+   .bub speech bubbles, .nm name plates, .chip model chips, .hcard hover/pin card,
+   .holo pod goal signs, .tcard table chips, .podlist drop-up rooms list and the
+   .deck-panel cards. Fonts and colours come from app.css variables when present
+   (--game, --pix, --ui, --text, --muted, --panel2, --line); each use has a fallback
+   so this file also works on its own. Text over the canvas scales with --zs, which
+   overlays.js sets on the #ov layer from the camera zoom (clamped 0.7–1.35). */
+
+/* ---------- speech bubbles ---------- */
+.bub{position:absolute;transform:translate(-50%,-100%);background:#f7f9ff;color:#111a30;border:2px solid var(--sc);border-radius:3px;padding:1px 6px 2px;
+  font-family:var(--game,'VT323',ui-monospace,monospace);font-size:calc(15px*var(--zs,1));line-height:1.1;white-space:nowrap;max-width:calc(150px*var(--zs,1));
+  overflow:hidden;text-overflow:ellipsis;box-shadow:2px 2px 0 #000a;pointer-events:auto;cursor:pointer;--sc:#7f8ba6;z-index:4}
+.bub::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--sc);border-bottom:0}
+.bub b{font-weight:400;color:#1b2750}
+.bub code{font-family:var(--game,'VT323',ui-monospace,monospace);font-size:calc(15px*var(--zs,1));background:#e2e8fa;padding:0 3px;border-radius:2px}
+.bub.working{--sc:#3ddc97}.bub.thinking{--sc:#6aa6ff}.bub.idle{--sc:#7f8ba6;opacity:.85}
+.bub.done,.bub.leaving,.bub.joining{--sc:#b48cff}.bub.compacting{--sc:#ff4d4d}.bub.teleporting{--sc:#7fe7ff}
+.bub.waiting{--sc:#ffb347;background:#fff4e0;animation:bub-shake 2.2s infinite;max-width:calc(210px*var(--zs,1))}
+.bub.sel{box-shadow:0 0 0 2px #fff,2px 2px 0 #000a}
+.bub:hover,.bub.sel{max-width:none;z-index:5}
+@keyframes bub-shake{0%,90%,100%{transform:translate(-50%,-100%)}92%{transform:translate(calc(-50% - 2px),-100%)}94%{transform:translate(calc(-50% + 2px),-100%)}96%{transform:translate(calc(-50% - 1px),-100%)}}
+
+/* ---------- name plates + chips ---------- */
+.nm{position:absolute;transform:translate(-50%,-50%);font-family:var(--game,'VT323',ui-monospace,monospace);font-size:calc(15px*var(--zs,1));line-height:1;color:#ffe9c9;
+  text-shadow:0 1px 0 #000,0 0 3px #000;white-space:nowrap;pointer-events:auto;cursor:pointer;letter-spacing:.3px;z-index:3}
+.nm.walk{color:#c9d3f5}
+.chip{display:inline-block;font-family:var(--pix,'Press Start 2P',monospace);font-size:calc(6px*var(--zs,1));line-height:1;color:#0a0f1e;padding:2px 3px;border-radius:2px;
+  vertical-align:middle;margin-left:4px;letter-spacing:.5px;background:#7f8ba6}
+.chip.warn{background:#ff4d4d;color:#fff;animation:chip-blink 1s steps(2) infinite}
+@keyframes chip-blink{50%{opacity:.35}}
+
+/* ---------- hover / pinned info card (lives on body, fixed) ---------- */
+.hcard{position:fixed;width:350px;max-width:calc(100vw - 16px);background:var(--panel2,#0d1527);border:2px solid #3b4f8f;border-radius:6px;box-shadow:4px 4px 0 #000c,0 0 0 1px #000;
+  color:var(--text,#e8edff);font-family:var(--ui,ui-sans-serif,system-ui,sans-serif);font-size:12px;pointer-events:auto;z-index:1000;line-height:1.35;box-sizing:border-box}
+.hcard *{box-sizing:border-box}
+.hcard[hidden]{display:none}
+.hcard.pinned{border-color:#fff}
+.hcard .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.hcard .muted{color:var(--muted,#8e99bb)}
+.hc-head{display:flex;gap:10px;padding:10px;border-bottom:1px dashed #22304f}
+.hc-port{width:84px;height:120px;image-rendering:pixelated;background:#141b36;border:2px solid var(--line,#26324f);border-radius:4px;flex:0 0 auto}
+.hc-title{min-width:0;flex:1}
+.hc-name{font-family:var(--game,'VT323',ui-monospace,monospace);font-size:22px;line-height:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;overflow-wrap:anywhere}
+.hc-name .chip{font-size:8px;padding:3px 4px;margin-left:0}
+.hc-type{color:var(--muted,#8e99bb);font-size:11.5px;margin-top:3px}
+.hc-state{font-family:var(--game,'VT323',ui-monospace,monospace);font-size:17px;margin:6px 0;display:flex;align-items:center;gap:6px}
+.hc-kv{display:grid;grid-template-columns:56px minmax(0,1fr);gap:3px 8px;margin:0;font-size:12px}
+.hc-kv dt{color:var(--muted,#8e99bb)}.hc-kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.hc-kv dd .bub-inline b{font-weight:600}
+.hc-sec{padding:8px 10px;border-bottom:1px dashed #22304f}
+.hc-wait{background:#2a1e08;color:#ffd9a3;padding:6px 10px;border-bottom:1px dashed #6b4d1a;font-family:var(--game,'VT323',ui-monospace,monospace);font-size:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hc-wait .muted{font-size:12px;font-family:var(--ui,ui-sans-serif,system-ui,sans-serif)}
+.hc-bar{height:7px;background:#1a2440;border-radius:4px;overflow:hidden;margin:3px 0 2px}
+.hc-bar i{display:block;height:100%;background:linear-gradient(90deg,#6aa6ff,#3ddc97)}
+.hc-bar i.hot{background:linear-gradient(90deg,#ffb347,#ff4d4d)}
+.hc-hot{color:#ff7b7b}
+.hc-foot{padding:5px 10px;color:var(--muted,#8e99bb);font-size:10.5px;background:#0a1226;border-radius:0 0 4px 4px}
+.hcard code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#0a1226;padding:0 3px;border-radius:3px;overflow-wrap:anywhere}
+
+/* ---------- pod goal sign + table chip ---------- */
+.holo{position:absolute;transform:translate(-50%,-100%);background:#0a2a33dd;border:1px solid #19d3e6;border-radius:3px;padding:2px 8px;font-family:var(--game,'VT323',ui-monospace,monospace);
+  font-size:calc(14px*var(--zs,1));line-height:1.1;color:#9fe9ff;text-shadow:0 0 4px #19d3e6aa;pointer-events:auto;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:left;box-shadow:0 0 12px #19d3e655;z-index:2;cursor:default}
+.holo:hover{max-width:none;white-space:normal;z-index:9}
+.holo .t{font-family:var(--pix,'Press Start 2P',monospace);font-size:6px;letter-spacing:1px;color:#19d3e6;margin-right:6px}
+.holo::after{content:"";position:absolute;left:50%;bottom:-14px;width:1px;height:14px;background:linear-gradient(#19d3e6,transparent)}
+.tcard{position:absolute;transform:translate(-50%,0);background:#07161cee;border:2px solid #19d3e6;border-radius:4px;padding:3px 8px;font-family:var(--game,'VT323',ui-monospace,monospace);
+  font-size:calc(14px*var(--zs,1));line-height:1.15;color:#dfe6ff;pointer-events:auto;white-space:nowrap;box-shadow:0 0 10px #19d3e644,2px 2px 0 #000a;z-index:3;cursor:default}
+.tcard .full{display:none;min-width:220px;max-width:280px;margin-top:3px}
+.tcard:hover{z-index:9}.tcard:hover .full{display:block}
+.tcard .muted{color:var(--muted,#8e99bb)}
+.tcard .tc-line b{color:#7fe7ff;font-weight:400}.tcard .tc-line .bad{color:#ff8a8a}
+.tcard .tc-h{color:#7fe7ff;font-size:15px}
+.tcard .tc-sub{color:var(--muted,#8e99bb);font-size:12px;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.tcard .tc-f{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcard .tc-f.bad{color:#ff8a8a}
+.tcard .tc-f code{font-family:var(--game,'VT323',ui-monospace,monospace);font-size:14px;background:#0a1226;padding:0 3px;border-radius:2px;color:#e8edff}
+.tcard .tc-f.bad code{color:#ffb3b3}
+.tcard .tc-f .oth{color:#ffd166}
+.tcard .tc-r{margin-top:3px;color:#c9d3f5}
+
+/* ---------- drop-up rooms list (bottom-left of the stage) ---------- */
+.podlist{position:absolute;left:10px;bottom:10px;z-index:6;pointer-events:auto;background:#07161cdd;border:1px solid #19d3e6;border-radius:4px;padding:6px 8px;
+  font-family:var(--game,'VT323',ui-monospace,monospace);font-size:15px;line-height:1.2;color:#dfe6ff;min-width:210px;max-width:300px;max-height:55%;overflow:auto;
+  box-shadow:0 0 10px #19d3e633,2px 2px 0 #000a;box-sizing:border-box}
+.podlist .h{display:flex;align-items:center;gap:8px;color:#7fe7ff;font-size:16px;cursor:pointer;user-select:none;padding:4px 2px 6px;position:sticky;bottom:-6px;background:#07161c;margin-bottom:-6px;z-index:1;border-top:1px dashed #19d3e644}
+.podlist.collapsed .h{border-top:0}
+.podlist .h .n{color:var(--muted,#8e99bb);margin-left:auto;font-size:13px}
+.podlist .row2{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:3px;cursor:pointer;white-space:nowrap}
+.podlist .row2:hover{background:#0e2a33}
+.podlist .row2.on{background:#123a45;outline:1px solid #19d3e6}
+.podlist .row2.dim{opacity:.55}
+.podlist .row2 .g{overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.podlist .row2 .m{color:var(--muted,#8e99bb);font-size:13px;flex:0 0 auto}
+.podlist .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.podlist.collapsed .row2{display:none}
+.podlist.collapsed{min-width:0}
+
+/* ---------- right panel cards (renderPanel adds .deck-panel to its container) ---------- */
+.deck-panel{display:flex;flex-direction:column;gap:14px;font-family:var(--ui,ui-sans-serif,system-ui,sans-serif);font-size:14px;color:var(--text,#e8edff)}
+.deck-panel *{box-sizing:border-box}
+.deck-panel .muted{color:var(--muted,#8e99bb)}.deck-panel .small{font-size:11.5px}.deck-panel .grow{flex:1;min-width:0}
+.deck-panel .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto;background:#7f8ba6}
+.deck-panel .card{background:var(--panel2,#0d1527);border:1px solid var(--line,#26324f);border-radius:10px;padding:12px 14px}
+.deck-panel .card h3{margin:0 0 8px;font-family:var(--game,'VT323',ui-monospace,monospace);font-size:21px;font-weight:400;color:#c9d3f5;letter-spacing:.3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.deck-panel .card h3.click{cursor:pointer}.deck-panel .card h3.click:hover{color:#fff}
+.deck-panel .card.attn{border-color:#6b4d1a;background:linear-gradient(#1a1608,var(--panel2,#0d1527))}
+.deck-panel .card.hud{border-color:#19d3e6;background:linear-gradient(#0a1f26,var(--panel2,#0d1527))}
+.deck-panel .card.empty{color:var(--muted,#8e99bb);font-style:italic}
+.deck-panel .row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed #22304f;font-size:12.5px}
+.deck-panel .row.first{border-top:0}
+.deck-panel .row.click{cursor:pointer}
+.deck-panel .row.click:hover{background:#0f1830;margin:0 -6px;padding-left:6px;padding-right:6px;border-radius:6px}
+.deck-panel .row.on{background:#131d38;margin:0 -6px;padding-left:6px;padding-right:6px;border-radius:6px}
+.deck-panel .row .grow{overflow-wrap:anywhere}
+.deck-panel .bar{height:7px;background:#1a2440;border-radius:4px;overflow:hidden}
+.deck-panel .bar i{display:block;height:100%;background:linear-gradient(90deg,#6aa6ff,#3ddc97);border-radius:4px}
+.deck-panel .bar i.hot{background:linear-gradient(90deg,#ffb347,#ff4d4d)}
+.deck-panel .hot{color:#ff7b7b}
+.deck-panel .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 14px;font-size:12.5px;margin:0}
+.deck-panel .kv dt{color:var(--muted,#8e99bb)}.deck-panel .kv dd{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deck-panel .prompt{margin:0;font-size:13px;line-height:1.45;color:#e6ecff;font-style:italic;overflow-wrap:anywhere}
+.deck-panel .feed{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.deck-panel .ev{display:grid;grid-template-columns:40px 20px minmax(0,1fr);gap:6px;align-items:start;line-height:1.35}
+.deck-panel .ev .t{color:var(--muted,#8e99bb);font-variant-numeric:tabular-nums;font-size:11.5px;padding-top:1px}
+.deck-panel .ev .w{color:#c9d3f5}
+.deck-panel .ev.you .w{color:#ffb347}
+.deck-panel .ev code,.deck-panel .card code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#0a1226;padding:1px 4px;border-radius:4px;word-break:break-all}
+.deck-panel .btn{font-family:var(--game,'VT323',ui-monospace,monospace);font-size:16px;line-height:1;padding:5px 9px;border-radius:6px;border:1px solid #3b4f8f;background:#1b2750;color:var(--text,#e8edff);cursor:pointer;white-space:nowrap}
+.deck-panel .btn:hover{background:#243466}
+.deck-panel .btn.right{margin-left:auto}
+.deck-panel .src{margin:0;padding-left:18px;font-size:12px;line-height:1.55;color:var(--muted,#8e99bb)}
+.deck-panel .badge{font-family:var(--pix,'Press Start 2P',monospace);font-size:7px;letter-spacing:1px;padding:3px 5px;border-radius:3px;background:#ff4d4d;color:#fff;vertical-align:middle}
+.deck-panel .badge.stale{background:#6b4d1a;color:#ffd9a3}

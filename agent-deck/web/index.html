@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/overlays.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">&#128640; AGENT DECK <span class="sub">local dashboard for Claude Code sessions</span></div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="stats">
+    <span id="topstats"></span>
+    <span class="status" id="status">&#9679; disconnected</span>
+    <select id="themesel" title="Theme"></select>
+    <span class="clock" id="clock"></span>
+  </div>
+</header>
+<main>
+  <section class="scene" id="scene">
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="ov" id="ov"></div>
+      <div class="podlist" id="podlist"></div>
+      <div class="viewctl" id="viewctl">
+        <button class="btn" id="zout" title="Zoom out (&minus;)">&minus;</button>
+        <span id="zoomchip">2&times;</span>
+        <button class="btn" id="zin" title="Zoom in (+)">+</button>
+        <button class="btn" id="recenter" title="Reset pan and zoom">&#9678; recenter</button>
+        <button class="btn" id="fs" title="Full screen (F)">&#9974; full screen</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--work)"></i>typing = running a tool</span>
+      <span><i style="background:var(--think)"></i>&hellip; = thinking</span>
+      <span><i style="background:var(--wait)"></i>raised hand = needs approval</span>
+      <span><i style="background:var(--idle)"></i>zz = idle</span>
+      <span><i style="background:var(--done)"></i>door = subagent joins / leaves</span>
+      <span>chip on the name plate = model &middot; hover a person for details, click to pin</span>
+      <span><i style="background:#ff4d4d"></i>red triangle = context over 85%, compaction coming &middot; crown = session lead</span>
+      <span><i style="background:#19d3e6"></i>glass pods off the hallway = huddles, one per batch of agents spawned together</span>
+    </div>
+  </section>
+  <aside class="panel" id="panel"></aside>
+</main>
+<div class="errbar" id="errbar" hidden></div>
+<footer>
+  <span>The deck is one Claude Code session. Desks are agents. Each glass pod is a batch of agents the lead spawned together: they share a goal and files, never a conversation.</span>
+  <span>drag to pan &middot; wheel or pinch to zoom &middot; <kbd>+</kbd><kbd>&minus;</kbd> zoom &middot; <kbd>F</kbd> full screen &middot; <kbd>Esc</kbd> clear selection &middot; <span class="diag" id="diag" title="Show or hide error reports">&#129658; no errors</span></span>
+</footer>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
