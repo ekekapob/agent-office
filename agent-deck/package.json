@@ -4,7 +4,9 @@
   "description": "Local isometric dashboard for Claude Code sessions and their agents. Reads ~/.claude, never calls a model.",
   "type": "module",
   "private": true,
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
     "demo": "node server.js --demo",
@@ -12,6 +14,10 @@
     "smoke": "node tools/smoke.mjs",
     "make-demo": "node tools/make-demo.mjs",
     "print-hooks": "node server.js --print-hooks",
-    "install-hooks": "node server.js --install-hooks"
+    "install-hooks": "node server.js --install-hooks",
+    "charlab": "node tools/charlab/serve.mjs",
+    "charlab:apply": "node tools/charlab/apply.mjs",
+    "charlab:docker": "docker compose up --build -d charlab",
+    "charlab:docker:stop": "docker compose stop charlab"
   }
 }

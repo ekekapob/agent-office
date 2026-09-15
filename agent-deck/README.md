@@ -103,7 +103,9 @@ Native is the primary way to run (it sees your processes). Docker works with a r
 
 ```sh
 cd agent-deck
-docker compose up --build         # then open http://localhost:7777
+docker compose up --build             # deck on http://localhost:7777, Character Lab on http://localhost:4800
+docker compose up --build agent-deck  # the deck alone
+docker compose up --build charlab     # the Character Lab alone (needs no ~/.claude)
 ```
 
 Without compose:
@@ -119,6 +121,10 @@ What differs inside a container:
 - The container cannot see host processes, so session liveness comes from file freshness: a session with no file change for `stale_after_s` (default 180 s) is labelled "stale?". `/api/health` reports `"mode": "docker"`.
 - File-change notifications do not cross the Docker Desktop VM boundary; Agent Deck polls anyway, so nothing is lost.
 - Hooks on the host post to `http://127.0.0.1:7777/hook/...` as usual because the port is published.
+- The `charlab` service shares the same image and only changes the command. It mounts `presets/`
+  read-write, so **Save preset** writes into your checkout, and mounts `web/`, `themes/` and
+  `tools/charlab/` read-only, so a host edit needs only a page reload. See
+  [`tools/charlab/README.md`](tools/charlab/README.md) for the Linux permission note.
 
 ## Windows and WSL
 
@@ -143,10 +149,29 @@ What differs inside a container:
 ## Adding a theme
 
 1. Copy `themes/spaceship.json` to `themes/<name>.json`.
-2. Set `name` and `label`, then edit the sections you care about: `palette`, `props`, `figures` (one entry per subagent type plus `lead` and `default`), `states`, `models`, `text` (deck, door, board, pod, pad labels) and `features` (`stars`, `viewports`, `planet`). Unknown keys are ignored; anything missing falls back to `spaceship`, so a partial file is fine.
+2. Set `name` and `label`, then edit the sections you care about: `palette`, `props`, `figures` (one entry per subagent type plus `lead` and `default`, each with `shirt`, `hair`, `pants`, `acc`, `outfit`, `head`, `face` and `crown`), `states`, `models`, `text` (deck, door, board, pod, pad labels) and `features` (`stars`, `viewports`, `planet`). Unknown keys are ignored; anything missing falls back to `spaceship`, so a partial file is fine.
 3. Select it with `"theme": "<name>"` in `agentdeck.json`, with `#theme=<name>` in the URL, or from the theme select in the top bar.
 
 No JavaScript changes are needed. If a look needs new geometry rather than new colours, that is a renderer change, not a theme.
+
+## Character Lab
+
+A separate page for designing the people, with a live preview drawn by the real renderer.
+
+```sh
+npm run charlab                                           # http://127.0.0.1:4800/
+npm run charlab:docker                                    # the same thing in Docker
+node tools/charlab/apply.mjs my-team --theme office --dry # show what applying would change
+node tools/charlab/apply.mjs my-team --theme office       # apply it
+```
+
+Pick colours, an outfit (`shirt`, `suit`, `turtleneck`, `tank`, `hoodie`, `bikini`, `dress`,
+`labcoat`, `armor`), a head (`human`, `swept`, `rabbit`, `cat`, `fox`, `bear`, `bird`, `robot`,
+`frog`), a face (`plain`, `john`, `smile`, `focused`, `tired`, `wink`) and an accessory per subagent
+type, press **Save preset**, and the lab writes
+`presets/<name>.json`. A preset holds character data only, so applying it to a theme leaves floors,
+walls, props, state colours and room text alone. It runs on its own port, does not read `~/.claude`,
+and does not talk to the dashboard. See [`tools/charlab/README.md`](tools/charlab/README.md).
 
 ## Tests and smoke
 
@@ -209,7 +234,9 @@ agent-deck/
     js/renderer/iso2d/      renderer.js, primitives.js, figure.js, props.js
   themes/spaceship.json, themes/office.json
   fixtures/                 real recorded files (see fixtures/README.md)
-  tests/                    node:test — adapter, paths, layout, state
+  presets/                  saved character presets (see presets/README.md)
+  tests/                    node:test — adapter, paths, layout, state, charlab
   tools/smoke.mjs           headless Chrome via CDP against --demo
+  tools/charlab/            Character Lab: index.html, serve.mjs, apply.mjs
   Dockerfile, compose.yaml, agentdeck.example.json
 ```

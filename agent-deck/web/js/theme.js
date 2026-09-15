@@ -2,7 +2,7 @@
 // and fills anything missing or malformed from the built-in spaceship theme.
 // Never throws: a failed load returns spaceship with `loadError` set.
 
-/** @typedef {{shirt:string, hair:string, pants:string, acc:string|null, crown?:boolean}} FigurePalette */
+/** @typedef {{shirt:string, hair:string, pants:string, acc:string|null, outfit?:string, head?:string, face?:string, crown?:boolean}} FigurePalette */
 /**
  * @typedef {Object} Theme
  * @property {string} name
@@ -61,7 +61,14 @@ export function validateTheme(raw, name) {
   const figures = { ...base.figures }, fs = isObj(src.figures) ? src.figures : {};
   for (const [k, v] of Object.entries(fs)) {
     if (!isObj(v) || !isColor(v.shirt) || !isColor(v.hair) || !isColor(v.pants)) { problems.push(`figures.${k} needs shirt, hair and pants colours`); continue; }
-    figures[k] = { shirt: v.shirt, hair: v.hair, pants: v.pants, acc: typeof v.acc === 'string' ? v.acc : null, crown: !!v.crown };
+    figures[k] = {
+      shirt: v.shirt, hair: v.hair, pants: v.pants,
+      acc: typeof v.acc === 'string' ? v.acc : null,
+      outfit: typeof v.outfit === 'string' ? v.outfit : 'shirt',
+      head: typeof v.head === 'string' ? v.head : 'human',
+      face: typeof v.face === 'string' ? v.face : 'plain',
+      crown: !!v.crown,
+    };
   }
   const models = { ...base.models }, ms = isObj(src.models) ? src.models : {};
   for (const [k, v] of Object.entries(ms)) { if (isObj(v) && typeof v.chip === 'string' && isColor(v.color)) models[k] = { chip: v.chip, color: v.color }; else problems.push(`models.${k} needs chip and color`); }

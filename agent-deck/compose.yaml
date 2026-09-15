@@ -1,8 +1,9 @@
 # Agent Deck in Docker. From this folder:
-#   docker compose up --build
-# then open http://localhost:7777
+#   docker compose up --build            both services: deck on 7777, Character Lab on 4800
+#   docker compose up --build charlab    the Character Lab alone (needs no ~/.claude)
+#   docker compose up --build agent-deck the deck alone
 #
-# The container reads your Claude Code files through a read-only bind mount and cannot see
+# The deck container reads your Claude Code files through a read-only bind mount and cannot see
 # host processes, so session liveness comes from file freshness (stale_after_s, default 180 s).
 # Hooks on the host keep posting to http://127.0.0.1:7777/hook/... because the port is published.
 services:
@@ -22,3 +23,28 @@ services:
       # - ./agentdeck.json:/app/agentdeck.json:ro
     environment:
       AGENTDECK_MODE: docker
+
+  # Character Lab — design the figures and save presets. Same image, different command.
+  # It never reads ~/.claude, so it runs on a machine with no Claude Code on it.
+  charlab:
+    build: .
+    image: agent-deck:local
+    container_name: agent-deck-charlab
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4800:4800"
+    volumes:
+      # Read-write: "Save preset" writes presets/<name>.json straight into your checkout.
+      - ./presets:/app/presets
+      # Read-only: edit these on the host and reload the page — no rebuild needed.
+      - ./themes:/app/themes:ro
+      - ./web:/app/web:ro
+      - ./tools/charlab:/app/tools/charlab:ro
+    command: ["node", "tools/charlab/serve.mjs", "--host", "0.0.0.0", "--port", "4800"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4800/api/themes"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3

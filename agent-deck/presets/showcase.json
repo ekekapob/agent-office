@@ -1,0 +1,262 @@
+{
+  "kind": "agentdeck-character-preset",
+  "version": 1,
+  "name": "showcase",
+  "label": "Showcase: every head, outfit and face",
+  "note": "One figure per head type, one per outfit and one per face. Load it to see what the renderer can draw.",
+  "palette": {
+    "skin": "#f2c9a0",
+    "hat": "#ffcc33",
+    "cap": "#2f9e6b",
+    "gold": "#e0b354",
+    "jewel": "#ff4d4d",
+    "tie": "#ffd166",
+    "lens": "#dfe6ee",
+    "outline": "#0a0f1e",
+    "ink": "#111111",
+    "earInner": "#e8a0a8",
+    "beak": "#ffb347",
+    "coat": "#e8edf5",
+    "visor": "#7fe7ff",
+    "metal": "#9aa8c0",
+    "lip": "#c2695f",
+    "blush": "#e8a0a8"
+  },
+  "figures": {
+    "head-human": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "plain"
+    },
+    "head-swept": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "swept",
+      "face": "plain"
+    },
+    "head-rabbit": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "rabbit",
+      "face": "plain"
+    },
+    "head-cat": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "cat",
+      "face": "plain"
+    },
+    "head-fox": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "fox",
+      "face": "plain"
+    },
+    "head-bear": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "bear",
+      "face": "plain"
+    },
+    "head-bird": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "bird",
+      "face": "plain"
+    },
+    "head-robot": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "robot",
+      "face": "plain"
+    },
+    "head-frog": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "frog",
+      "face": "plain"
+    },
+    "fit-shirt": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-suit": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "suit",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-turtleneck": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "turtleneck",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-tank": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "tank",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-hoodie": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "hoodie",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-bikini": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "bikini",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-dress": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "dress",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-labcoat": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "labcoat",
+      "head": "human",
+      "face": "plain"
+    },
+    "fit-armor": {
+      "shirt": "#d64b4b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "armor",
+      "head": "human",
+      "face": "plain"
+    },
+    "lead": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": "tie",
+      "outfit": "suit",
+      "head": "human",
+      "face": "plain",
+      "crown": true
+    },
+    "default": {
+      "shirt": "#3b6fd8",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "plain"
+    },
+    "face-plain": {
+      "shirt": "#7b5bd6",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "plain"
+    },
+    "face-john": {
+      "shirt": "#7b5bd6",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "john"
+    },
+    "face-smile": {
+      "shirt": "#7b5bd6",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "smile"
+    },
+    "face-focused": {
+      "shirt": "#7b5bd6",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "focused"
+    },
+    "face-tired": {
+      "shirt": "#7b5bd6",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "tired"
+    },
+    "face-wink": {
+      "shirt": "#7b5bd6",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": null,
+      "outfit": "shirt",
+      "head": "human",
+      "face": "wink"
+    }
+  }
+}

@@ -4,6 +4,10 @@
 #   docker run --rm -p 127.0.0.1:7777:7777 -v "$HOME/.claude:/data/claude:ro" agent-deck
 #   or: docker compose up --build
 #
+# The same image also runs the Character Lab (tools/charlab), which reads nothing under ~/.claude:
+#   docker run --rm -p 127.0.0.1:4800:4800 -v "$PWD/presets:/app/presets" agent-deck \
+#     node tools/charlab/serve.mjs --host 0.0.0.0 --port 4800
+#
 # Zero npm dependencies, so there is no install step: the image is Node plus this folder.
 FROM node:20-alpine
 

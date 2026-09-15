@@ -1,0 +1,57 @@
+{
+  "kind": "agentdeck-character-preset",
+  "version": 1,
+  "name": "office-default",
+  "label": "Office default",
+  "note": "The stock office cast, saved as a preset so you can always get back to it.",
+  "palette": {
+    "skin": "#f2c9a0",
+    "hat": "#ffcc33",
+    "cap": "#2f9e6b",
+    "gold": "#e0b354",
+    "jewel": "#ff4d4d",
+    "tie": "#ffd166",
+    "lens": "#dfe6ee",
+    "outline": "#0a0f1e",
+    "ink": "#111111"
+  },
+  "figures": {
+    "lead": {
+      "shirt": "#3b4fd8",
+      "hair": "#2b1d0e",
+      "pants": "#26305c",
+      "acc": "tie",
+      "crown": true
+    },
+    "Explore": {
+      "shirt": "#2f9e6b",
+      "hair": "#5a3a1a",
+      "pants": "#2b3a4b",
+      "acc": "cap"
+    },
+    "Plan": {
+      "shirt": "#7b5bd6",
+      "hair": "#8a8a8a",
+      "pants": "#3a2a5a",
+      "acc": "glasses"
+    },
+    "general-purpose": {
+      "shirt": "#e07a2f",
+      "hair": "#1a1a1a",
+      "pants": "#3a2a1a",
+      "acc": "hat"
+    },
+    "code-review": {
+      "shirt": "#d64b4b",
+      "hair": "#3a2a1a",
+      "pants": "#2a1a1a",
+      "acc": "badge"
+    },
+    "default": {
+      "shirt": "#7f8ba6",
+      "hair": "#3a2a1a",
+      "pants": "#2b3a4b",
+      "acc": null
+    }
+  }
+}

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Deck · Character Lab</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg:#070b18; --panel:#101728; --line:#22304f; --ink:#dbe4ff; --dim:#8b9bc4; --accent:#6aa6ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.45 ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+  header { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 14px; background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:2; }
+  header h1 { font-size:14px; margin:0 12px 0 0; font-weight:600; letter-spacing:.04em; }
+  header h1 span { color:var(--dim); font-weight:400; }
+  main { display:grid; grid-template-columns: 360px 1fr; gap:14px; padding:14px; align-items:start; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; }
+  h2 { font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--dim); margin:0 0 8px; font-weight:600; }
+  h2:not(:first-child) { margin-top:16px; }
+  button, select, input[type=text] { background:#18223a; color:var(--ink); border:1px solid var(--line); border-radius:5px; padding:4px 8px; font:inherit; }
+  button { cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); color:#06101f; border-color:var(--accent); font-weight:600; }
+  input[type=color] { width:26px; height:22px; padding:0; border:1px solid var(--line); border-radius:4px; background:none; cursor:pointer; }
+  input[type=text] { width:84px; font-family:ui-monospace, "Cascadia Mono", monospace; font-size:12px; }
+  label.f { display:flex; align-items:center; gap:5px; color:var(--dim); }
+  .row { display:flex; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid rgba(34,48,79,.5); }
+  .row .nm { flex:0 0 92px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+  .row select { flex:0 0 auto; padding:3px 4px; }
+  .row .spacer { flex:1 1 auto; }
+  .type { padding:5px 0; border-bottom:1px solid rgba(34,48,79,.5); border-radius:4px; }
+  .type.sel { background:rgba(106,166,255,.10); }
+  .type .line { display:flex; align-items:center; gap:6px; }
+  .type .line + .line { margin-top:4px; padding-left:4px; }
+  .type .line select { flex:1 1 0; min-width:0; padding:3px 4px; }
+  .type .nm { flex:0 0 92px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; cursor:pointer; }
+  .type .spacer { flex:1 1 auto; }
+  .row.sel { background:rgba(106,166,255,.10); border-radius:4px; }
+  .row .pick { cursor:pointer; }
+  .col { display:inline-flex; align-items:center; gap:3px; }
+  .col input[type=text] { width:70px; }
+  .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:6px 10px; }
+  .grid .cell { display:flex; align-items:center; justify-content:space-between; gap:6px; color:var(--dim); }
+  .stage { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  canvas { image-rendering: pixelated; border-radius:6px; border:1px solid var(--line); display:block; }
+  #roster { display:flex; flex-wrap:wrap; gap:8px; }
+  #roster .cardx { border:1px solid var(--line); border-radius:6px; padding:4px; cursor:pointer; text-align:center; }
+  #roster .cardx.sel { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+  #roster .cardx div { font-size:10px; color:var(--dim); max-width:92px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; }
+  .ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:10px; }
+  #status { color:var(--dim); font-size:12px; margin-left:auto; }
+  #status.bad { color:#ff8b8b; }
+  #status.good { color:#3ddc97; }
+  .hint { color:var(--dim); font-size:11px; margin:6px 0 0; }
+  .del { color:#ff8b8b; border-color:transparent; background:none; padding:2px 5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Character Lab <span>· Agent Deck</span></h1>
+  <label class="f">Room <select id="basesel"></select></label>
+  <label class="f">Preset <select id="presetsel"></select></label>
+  <button id="load">Load</button>
+  <label class="f">Save as <input type="text" id="pname" value="my-team" style="width:130px"></label>
+  <label class="f">Label <input type="text" id="plabel" value="My team" style="width:130px"></label>
+  <button id="save" class="primary">Save preset</button>
+  <button id="copy">Copy JSON</button>
+  <span id="status"></span>
+</header>
+
+<main>
+  <section id="side">
+    <h2>Shared colours</h2>
+    <div class="grid" id="shared"></div>
+
+    <h2>Agent types</h2>
+    <div id="rows"></div>
+    <div class="ctl" style="margin-top:8px">
+      <input type="text" id="newtype" placeholder="new agent type" style="width:150px">
+      <button id="addtype">Add type</button>
+      <button id="reseed">Reset from room theme</button>
+    </div>
+    <p class="hint">Outfit, head and accessory are limited to what the renderer draws. Body proportions are not adjustable here.</p>
+  </section>
+
+  <section id="stage">
+    <div class="ctl">
+      <label class="f">State
+        <select id="state">
+          <option>working</option><option>thinking</option><option>waiting</option><option>idle</option>
+          <option>done</option><option>compacting</option><option>joining</option><option>leaving</option>
+        </select>
+      </label>
+      <label class="f">Facing
+        <select id="facing"><option>SW</option><option>SE</option><option>NE</option><option>NW</option></select>
+      </label>
+      <label class="f"><input type="checkbox" id="seated"> seated</label>
+      <label class="f"><input type="checkbox" id="ctxwarn"> context warning</label>
+      <label class="f">Zoom <input type="range" id="zoom" min="2" max="7" value="5"></label>
+    </div>
+    <div class="stage">
+      <canvas id="hero"></canvas>
+      <div>
+        <h2 style="margin-top:0">Roster</h2>
+        <div id="roster"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+// The lab draws with the real renderer modules, not a copy. Whatever appears here is exactly what
+// Agent Deck draws, because drawFigure()/drawChar() are imported from web/js/renderer/iso2d/.
+import { V, poly } from '/web/js/renderer/iso2d/primitives.js';
+import { drawFigure, drawChar, OUTFITS, HEADS, FACES } from '/web/js/renderer/iso2d/figure.js';
+import { resolveColors } from '/web/js/renderer/iso2d/colors.js';
+
+const ACC = ['', 'tie', 'cap', 'hat', 'glasses', 'badge'];
+/** Shared palette keys a preset owns, with the label shown in the panel. Must match SHARED_KEYS in serve.mjs. */
+const SHARED = [
+  ['skin', 'Skin'], ['hat', 'Hard hat'], ['cap', 'Cap'], ['gold', 'Crown'], ['jewel', 'Crown jewel'],
+  ['tie', 'Tie / badge'], ['lens', 'Glasses'], ['outline', 'Outline'], ['ink', 'Eyes'],
+  ['earInner', 'Ear lining'], ['beak', 'Beak'], ['coat', 'Lab coat'], ['visor', 'Robot visor'], ['metal', 'Metal'],
+  ['lip', 'Lips'], ['blush', 'Blush'],
+];
+const HERO_W = 104, HERO_H = 108, CELL_W = 46, CELL_H = 58;
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls) => { const n = document.createElement(tag); if (cls) n.className = cls; return n; };
+const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'untitled';
+
+let baseTheme = null;                                     // room colours only
+let preset = { name: 'my-team', label: 'My team', note: '', palette: {}, figures: {} };
+let C = null;                                             // resolveColors(base + preset)
+let selected = 'lead';
+let cells = [];                                           // [{ type, canvas, node }]
+const ui = { state: 'working', facing: 'SW', seated: false, ctxWarn: false, zoom: 5 };
+
+function status(msg, kind) { const s = $('status'); s.textContent = msg; s.className = kind || ''; }
+
+/** Base theme + preset overrides, as one theme object resolveColors() understands. */
+function merged() {
+  const t = JSON.parse(JSON.stringify(baseTheme || {}));
+  t.palette = { ...(t.palette || {}), ...preset.palette };
+  t.figures = JSON.parse(JSON.stringify(preset.figures));
+  return t;
+}
+function rebuild() { C = resolveColors(merged()); }
+
+/** Fill the preset from the current room theme's own figures — the "start over" path. */
+function seedFromTheme() {
+  const c0 = resolveColors(baseTheme);
+  preset.palette = {};
+  for (const [k] of SHARED) preset.palette[k] = c0[k];
+  preset.figures = {};
+  for (const [type, f] of Object.entries(c0.figures)) {
+    preset.figures[type] = {
+      shirt: f.shirt, hair: f.hair, pants: f.pants, acc: f.acc || null,
+      outfit: f.outfit || 'shirt', head: f.head || 'human', face: f.face || 'plain',
+      ...(f.crown ? { crown: true } : {}),
+    };
+  }
+  if (!preset.figures[selected]) selected = Object.keys(preset.figures)[0] || 'default';
+}
+
+// ---- colour widget -----------------------------------------------------------------
+function colorInput(get, set, opts) {
+  const { compact = false, title = '' } = opts || {};
+  const wrap = el('span', 'col');
+  const sw = el('input'); sw.type = 'color'; sw.value = get(); sw.title = title;
+  let tx = null;
+  if (!compact) {
+    tx = el('input'); tx.type = 'text'; tx.value = get(); tx.spellcheck = false;
+    tx.onchange = () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(tx.value)) { const v = tx.value.toLowerCase(); sw.value = v; tx.value = v; set(v); rebuild(); }
+      else tx.value = sw.value;
+    };
+  }
+  sw.oninput = () => { if (tx) tx.value = sw.value; set(sw.value); rebuild(); };
+  wrap.append(sw);
+  if (tx) wrap.append(tx);
+  return wrap;
+}
+
+// ---- panels ------------------------------------------------------------------------
+function renderShared() {
+  const box = $('shared'); box.textContent = '';
+  for (const [key, label] of SHARED) {
+    const cell = el('div', 'cell');
+    const name = el('span'); name.textContent = label;
+    cell.append(name, colorInput(() => preset.palette[key] || '#ffffff', (v) => { preset.palette[key] = v; }));
+    box.append(cell);
+  }
+}
+
+function picker(values, current, title, onPick) {
+  const sel = el('select'); sel.title = title;
+  for (const v of values) { const o = el('option'); o.value = v; o.textContent = v || '(none)'; sel.append(o); }
+  sel.value = current;
+  sel.onchange = () => { onPick(sel.value); rebuild(); };
+  return sel;
+}
+
+function renderRows() {
+  const box = $('rows'); box.textContent = '';
+  for (const type of Object.keys(preset.figures)) {
+    const f = preset.figures[type];
+    const card = el('div', `type${type === selected ? ' sel' : ''}`);
+    const line1 = el('div', 'line'), line2 = el('div', 'line');
+
+    const nm = el('span', 'nm pick'); nm.textContent = type; nm.title = `preview ${type}`;
+    nm.onclick = () => { selected = type; renderRows(); renderRoster(); };
+    const crown = el('input'); crown.type = 'checkbox'; crown.checked = !!f.crown; crown.title = 'crown';
+    crown.onchange = () => { if (crown.checked) f.crown = true; else delete f.crown; rebuild(); };
+    const crownLabel = el('label', 'f'); crownLabel.title = 'crown'; crownLabel.append(crown, document.createTextNode('👑'));
+    const del = el('button', 'del'); del.textContent = '×'; del.title = `remove ${type}`;
+    del.onclick = () => {
+      if (Object.keys(preset.figures).length <= 1) return status('keep at least one agent type', 'bad');
+      delete preset.figures[type];
+      if (selected === type) selected = Object.keys(preset.figures)[0];
+      rebuild(); renderRows(); renderRoster();
+    };
+    line1.append(
+      nm,
+      colorInput(() => f.shirt, (v) => { f.shirt = v; }, { compact: true, title: 'shirt / outfit colour' }),
+      colorInput(() => f.hair, (v) => { f.hair = v; }, { compact: true, title: 'hair / ears' }),
+      colorInput(() => f.pants, (v) => { f.pants = v; }, { compact: true, title: 'pants' }),
+      crownLabel, el('span', 'spacer'), del,
+    );
+    line2.append(
+      picker(OUTFITS, f.outfit || 'shirt', 'outfit', (v) => { f.outfit = v; }),
+      picker(HEADS, f.head || 'human', 'head', (v) => { f.head = v; }),
+      picker(FACES, f.face || 'plain', 'face', (v) => { f.face = v; }),
+      picker(ACC, f.acc || '', 'accessory', (v) => { f.acc = v || null; }),
+    );
+    card.append(line1, line2);
+    box.append(card);
+  }
+  const key = el('p', 'hint');
+  key.textContent = 'swatches: shirt · hair · pants. Second line: outfit, head, face, accessory. Click a name to preview it.';
+  box.append(key);
+}
+
+function renderRoster() {
+  const box = $('roster'); box.textContent = '';
+  cells = [];
+  for (const type of Object.keys(preset.figures)) {
+    const card = el('div', `cardx${type === selected ? ' sel' : ''}`);
+    const cv = el('canvas');
+    cv.width = CELL_W * 2; cv.height = CELL_H * 2;
+    cv.style.width = `${CELL_W * 2}px`;
+    const cap = el('div'); cap.textContent = type; cap.title = type;
+    card.append(cv, cap);
+    card.onclick = () => { selected = type; renderRows(); renderRoster(); };
+    box.append(card);
+    cells.push({ type, ctx: cv.getContext('2d') });
+  }
+}
+
+// ---- drawing -----------------------------------------------------------------------
+function person(type, walkT) {
+  const walking = ui.state === 'joining' || ui.state === 'leaving';
+  return {
+    id: `lab-${type}`, type, state: ui.state, pos: { i: 0, j: 0 }, z: 0,
+    facing: ui.facing, seated: ui.seated, isLead: false, ctxWarn: ui.ctxWarn,
+    walkT: walking ? walkT : 0,
+  };
+}
+
+function floorDiamond(x, y) {
+  poly([x, y - 10, x + 20, y, x, y + 10, x - 20, y], C.floor1);
+  poly([x, y - 8, x + 16, y, x, y + 8, x - 16, y], C.floor2);
+}
+
+function paint(ts) {
+  requestAnimationFrame(paint);
+  if (!C) return;
+  const f = Math.floor(ts / 150), walkT = (ts / 700) % 1;
+
+  const hero = $('hero');
+  const z = ui.zoom;
+  if (hero.width !== HERO_W * z) { hero.width = HERO_W * z; hero.height = HERO_H * z; hero.style.width = `${HERO_W * z}px`; }
+  const hctx = hero.getContext('2d');
+  hctx.setTransform(1, 0, 0, 1, 0, 0);
+  hctx.fillStyle = C.bg; hctx.fillRect(0, 0, hero.width, hero.height);
+  hctx.setTransform(z, 0, 0, z, 0, 0);
+  hctx.imageSmoothingEnabled = false;
+  V.ctx = hctx; V.ox = HERO_W / 2; V.oy = 76;
+  floorDiamond(HERO_W / 2, 76);
+  drawChar(person(selected, walkT), C, f, { selectedId: null, hoverId: null });
+
+  for (const cell of cells) {
+    const ctx = cell.ctx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, CELL_W * 2, CELL_H * 2);
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    V.ctx = ctx; V.ox = CELL_W / 2; V.oy = 48;
+    floorDiamond(CELL_W / 2, 48);
+    drawFigure(CELL_W / 2, 48, person(cell.type, walkT), C, f, {
+      seated: ui.seated, facing: ui.facing, walking: ui.state === 'joining' || ui.state === 'leaving',
+      wf: Math.floor(walkT * 7) % 2, outline: C.outline,
+    });
+  }
+}
+
+// ---- preset I/O --------------------------------------------------------------------
+function buildPreset(name) {
+  return {
+    kind: 'agentdeck-character-preset', version: 1,
+    name, label: preset.label || name, note: preset.note || '',
+    palette: { ...preset.palette }, figures: JSON.parse(JSON.stringify(preset.figures)),
+  };
+}
+
+async function refreshPresetList(pick) {
+  const sel = $('presetsel');
+  let list = [];
+  try { list = (await (await fetch('/api/presets')).json()).presets || []; } catch { /* offline */ }
+  sel.textContent = '';
+  if (!list.length) { const o = el('option'); o.value = ''; o.textContent = '(none saved)'; sel.append(o); return; }
+  for (const p of list) { const o = el('option'); o.value = p.name; o.textContent = `${p.label} (${p.figures})`; sel.append(o); }
+  if (pick) sel.value = pick;
+}
+
+async function loadPreset(name) {
+  if (!name) return;
+  const res = await fetch(`/api/presets/${encodeURIComponent(name)}`);
+  if (!res.ok) return status(`could not load ${name}`, 'bad');
+  const j = await res.json();
+  preset = { name: j.name, label: j.label || j.name, note: j.note || '', palette: j.palette || {}, figures: j.figures || {} };
+  selected = Object.keys(preset.figures)[0] || 'default';
+  $('pname').value = preset.name;
+  $('plabel').value = preset.label;
+  rebuild(); renderShared(); renderRows(); renderRoster();
+  status(`loaded ${name}`, 'good');
+}
+
+async function savePreset() {
+  const name = slug($('pname').value);
+  $('pname').value = name;
+  preset.name = name;
+  preset.label = $('plabel').value.trim() || name;
+  const res = await fetch(`/api/presets/${name}`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(buildPreset(name)),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) return status(`not saved: ${(j.problems || ['server error']).join('; ')}`, 'bad');
+  await refreshPresetList(name);
+  status(`saved ${j.saved}`, 'good');
+}
+
+// ---- boot --------------------------------------------------------------------------
+async function boot() {
+  let themes = ['office', 'spaceship'];
+  try { themes = (await (await fetch('/api/themes')).json()).themes || themes; } catch { /* keep defaults */ }
+  const bs = $('basesel');
+  for (const t of themes) { const o = el('option'); o.value = t; o.textContent = t; bs.append(o); }
+  bs.value = themes.includes('office') ? 'office' : themes[0];
+
+  async function loadBase(name) {
+    try { baseTheme = await (await fetch(`/themes/${name}.json`)).json(); }
+    catch { baseTheme = {}; status(`could not load theme ${name}`, 'bad'); }
+  }
+  await loadBase(bs.value);
+  seedFromTheme();
+  rebuild(); renderShared(); renderRows(); renderRoster();
+  await refreshPresetList();
+
+  bs.onchange = async () => { await loadBase(bs.value); rebuild(); status(`room: ${bs.value} (characters kept)`); };
+  $('reseed').onclick = () => { seedFromTheme(); rebuild(); renderShared(); renderRows(); renderRoster(); status('characters reset from room theme'); };
+  $('addtype').onclick = () => {
+    const name = $('newtype').value.trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9 ._-]{0,39}$/.test(name)) return status('type name: letters, digits, space, . _ -', 'bad');
+    if (preset.figures[name]) return status(`${name} already exists`, 'bad');
+    preset.figures[name] = { shirt: '#7f8ba6', hair: '#3a2a1a', pants: '#2b3a4b', acc: null, outfit: 'shirt', head: 'human', face: 'plain' };
+    selected = name; $('newtype').value = '';
+    rebuild(); renderRows(); renderRoster();
+  };
+  $('plabel').onchange = () => { preset.label = $('plabel').value.trim(); };
+  $('load').onclick = () => loadPreset($('presetsel').value);
+  $('save').onclick = savePreset;
+  $('copy').onclick = async () => {
+    try { await navigator.clipboard.writeText(JSON.stringify(buildPreset(slug($('pname').value)), null, 2)); status('JSON copied', 'good'); }
+    catch { status('clipboard blocked — use Save preset', 'bad'); }
+  };
+  for (const [id, key] of [['state', 'state'], ['facing', 'facing']]) $(id).onchange = (e) => { ui[key] = e.target.value; };
+  $('seated').onchange = (e) => { ui.seated = e.target.checked; };
+  $('ctxwarn').onchange = (e) => { ui.ctxWarn = e.target.checked; };
+  $('zoom').oninput = (e) => { ui.zoom = Number(e.target.value); };
+
+  requestAnimationFrame(paint);
+}
+
+boot();
+</script>
+</body>
+</html>

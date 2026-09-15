@@ -28,6 +28,8 @@ const DETAIL = {
   doorPanel: '#141b2a', hazard: '#ffcc33', doorWindow: '#0b2a33', holoScreen: '#07202a', signPlate: '#0a1220',
   podBase1: '#0f1e22', podBase2: '#0a1518', padCore: '#0e3d4a', chipInk: '#0a2a33', ledOff: '#22304f', ledSlot: '#0e1424',
   steam: '#c9d3f5', hat: '#ffcc33', cap: '#2f9e6b', gold: '#e0b354', tie: '#ffd166', lens: '#dfe6ee', jewel: '#ff4d4d',
+  earInner: '#e8a0a8', beak: '#ffb347', coat: '#e8edf5', visor: '#7fe7ff', metal: '#9aa8c0',
+  lip: '#c2695f', blush: '#e8a0a8',
   portraitBg: '#141b36', portraitFloor1: '#2f3a63', portraitFloor2: '#343f6b',
 };
 
@@ -75,5 +77,12 @@ export function resolveColors(theme) {
 
 function figurePalette(f, fb) {
   const o = obj(f);
-  return { shirt: hex(o.shirt, fb.shirt), hair: hex(o.hair, fb.hair), pants: hex(o.pants, fb.pants), acc: typeof o.acc === 'string' ? o.acc : null, crown: !!o.crown };
+  return {
+    shirt: hex(o.shirt, fb.shirt), hair: hex(o.hair, fb.hair), pants: hex(o.pants, fb.pants),
+    acc: typeof o.acc === 'string' ? o.acc : null,
+    outfit: typeof o.outfit === 'string' ? o.outfit : 'shirt',
+    head: typeof o.head === 'string' ? o.head : 'human',
+    face: typeof o.face === 'string' ? o.face : 'plain',
+    crown: !!o.crown,
+  };
 }

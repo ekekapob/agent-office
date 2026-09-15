@@ -1,0 +1,82 @@
+{
+  "kind": "agentdeck-character-preset",
+  "version": 1,
+  "name": "john",
+  "label": "John",
+  "note": "Face from the split photo: lead is the anime half (blond swept hair, black turtleneck), default is the photo half (dark hair, white shirt). Both wear glasses and the john face.",
+  "palette": {
+    "skin": "#f0d7c2",
+    "hat": "#ffcc33",
+    "cap": "#2f9e6b",
+    "gold": "#e0b354",
+    "jewel": "#ff4d4d",
+    "tie": "#ffd166",
+    "lens": "#e7edf4",
+    "outline": "#0a0f1e",
+    "ink": "#2a2440",
+    "earInner": "#e8a0a8",
+    "beak": "#ffb347",
+    "coat": "#f0f2f5",
+    "visor": "#7fe7ff",
+    "metal": "#9aa8c0",
+    "lip": "#c2695f",
+    "blush": "#e8a0a8"
+  },
+  "figures": {
+    "lead": {
+      "shirt": "#2b2b2e",
+      "hair": "#d9c89a",
+      "pants": "#26282e",
+      "acc": "glasses",
+      "outfit": "turtleneck",
+      "head": "swept",
+      "crown": true,
+      "face": "john"
+    },
+    "Explore": {
+      "shirt": "#2f9e6b",
+      "hair": "#1f1b18",
+      "pants": "#2b3a4b",
+      "acc": "cap",
+      "outfit": "tank",
+      "head": "human",
+      "face": "smile"
+    },
+    "Plan": {
+      "shirt": "#7b5bd6",
+      "hair": "#8a8a8a",
+      "pants": "#3a2a5a",
+      "acc": "glasses",
+      "outfit": "labcoat",
+      "head": "human",
+      "face": "focused"
+    },
+    "general-purpose": {
+      "shirt": "#e07a2f",
+      "hair": "#1a1a1a",
+      "pants": "#3a2a1a",
+      "acc": "hat",
+      "outfit": "shirt",
+      "head": "human",
+      "face": "smile"
+    },
+    "code-review": {
+      "shirt": "#d64b4b",
+      "hair": "#3a2a1a",
+      "pants": "#2a1a1a",
+      "acc": "badge",
+      "outfit": "suit",
+      "head": "human",
+      "face": "focused"
+    },
+    "default": {
+      "shirt": "#f0f2f5",
+      "hair": "#1f1b18",
+      "pants": "#2b3243",
+      "acc": "glasses",
+      "outfit": "shirt",
+      "head": "swept",
+      "face": "john"
+    }
+  }
+}
